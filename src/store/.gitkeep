@@ -1,0 +1,7 @@
+# Zustand stores will be added here in subsequent phases
+# - authStore.ts
+# - dashboardStore.ts
+# - savingsStore.ts
+# - marketplaceStore.ts
+# - profileStore.ts
+# - uiStore.ts

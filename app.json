@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Sinoman Mobile App",
+    "slug": "sinoman-mobile-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#059669"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "android": {
+      "package": "id.co.sinoman.mobile",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#059669"
+      },
+      "permissions": [
+        "CAMERA",
+        "USE_FINGERPRINT",
+        "USE_BIOMETRIC",
+        "RECEIVE_BOOT_COMPLETED"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "id.co.sinoman.mobile",
+      "buildNumber": "1.0.0",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Aplikasi memerlukan akses kamera untuk scan QR code pembayaran",
+        "NSFaceIDUsageDescription": "Aplikasi menggunakan Face ID untuk login yang aman dan cepat",
+        "NSPhotoLibraryUsageDescription": "Aplikasi memerlukan akses galeri untuk memilih foto profil"
+      }
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    }
+  }
+}
