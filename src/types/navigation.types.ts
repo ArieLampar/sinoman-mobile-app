@@ -7,10 +7,23 @@ export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
   TopUp: { savingsType?: SavingsType };
+  QRPayment: { qrData: QRCodeData; merchant?: MerchantInfo };
+  QRGenerate: undefined;
+  Settings: undefined;
+  EditProfile: undefined;
+  KYCVerification: undefined;
+  ChangePhone: undefined;
+  NotificationSettings: undefined;
+  SecuritySettings: undefined;
+  HelpCenter: undefined;
+  About: undefined;
+  Terms: undefined;
+  Privacy: undefined;
 };
 
-// Import SavingsType for TopUp params
+// Import types for params
 import { SavingsType } from './savings.types';
+import { QRCodeData, MerchantInfo } from './qr.types';
 
 // Auth Stack
 export type AuthStackParamList = {

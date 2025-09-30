@@ -36,7 +36,11 @@
     "expo-status-bar": "~1.6.0",
     "expo-local-authentication": "~13.4.1",
     "expo-app-state": "~2.4.0",
-    "expo-linear-gradient": "~12.3.0"
+    "expo-linear-gradient": "~12.3.0",
+    "expo-camera": "~13.4.4",
+    "expo-barcode-scanner": "~12.5.3",
+    "expo-image-picker": "~14.3.2",
+    "expo-permissions": "~14.2.1"
   },
   "devDependencies": {
     "typescript": "^5.0.0",

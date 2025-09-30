@@ -6,6 +6,8 @@ import { RootStackParamList } from '@types';
 import { AuthNavigator } from './AuthNavigator';
 import { MainNavigator } from './MainNavigator';
 import { TopUpScreen } from '@screens/savings/TopUpScreen';
+import { QRPaymentScreen } from '@screens/qr/QRPaymentScreen';
+import { SettingsScreen } from '@screens/profile/SettingsScreen';
 import { useAuthStore } from '@store/authStore';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -40,6 +42,23 @@ export const RootNavigator: React.FC = () => {
               headerShown: true,
               title: 'Top Up Simpanan',
               presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="QRPayment"
+            component={QRPaymentScreen}
+            options={{
+              headerShown: true,
+              title: 'Konfirmasi Pembayaran',
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="Settings"
+            component={SettingsScreen}
+            options={{
+              headerShown: true,
+              title: 'Pengaturan',
             }}
           />
         </>
