@@ -19,6 +19,8 @@ export * from './qr.types';
 // Profile types
 export * from './profile.types';
 
+// Marketplace types
+export * from './marketplace.types';
+
 // Additional types will be added in subsequent phases:
-// export * from './marketplace.types';
 // export * from './common.types';

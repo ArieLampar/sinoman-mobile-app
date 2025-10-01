@@ -13,6 +13,7 @@ export const STORAGE_KEYS = {
   USER_DATA: '@sinoman:user_data',
   BIOMETRIC_ENABLED: '@sinoman:biometric_enabled',
   OFFLINE_QUEUE: '@sinoman:offline_queue',
+  CART: '@sinoman:cart',
 } as const;
 
 // Validation Rules

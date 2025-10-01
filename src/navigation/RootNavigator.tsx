@@ -11,6 +11,10 @@ import { ReceiptScreen } from '@screens/savings/ReceiptScreen';
 import { QRPaymentScreen } from '@screens/qr/QRPaymentScreen';
 import { MyQRCodeScreen } from '@screens/qr/MyQRCodeScreen';
 import { SettingsScreen } from '@screens/profile/SettingsScreen';
+import { ProductDetailScreen } from '@screens/marketplace/ProductDetailScreen';
+import { CartScreen } from '@screens/marketplace/CartScreen';
+import { CheckoutScreen } from '@screens/marketplace/CheckoutScreen';
+import { OrderConfirmationScreen } from '@screens/marketplace/OrderConfirmationScreen';
 import { useAuthStore } from '@store/authStore';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -88,6 +92,39 @@ export const RootNavigator: React.FC = () => {
             options={{
               headerShown: true,
               title: 'Pengaturan',
+            }}
+          />
+          <Stack.Screen
+            name="ProductDetail"
+            component={ProductDetailScreen}
+            options={{
+              headerShown: true,
+              title: 'Detail Produk',
+            }}
+          />
+          <Stack.Screen
+            name="Cart"
+            component={CartScreen}
+            options={{
+              headerShown: true,
+              title: 'Keranjang Belanja',
+            }}
+          />
+          <Stack.Screen
+            name="Checkout"
+            component={CheckoutScreen}
+            options={{
+              headerShown: true,
+              title: 'Checkout',
+            }}
+          />
+          <Stack.Screen
+            name="OrderConfirmation"
+            component={OrderConfirmationScreen}
+            options={{
+              headerShown: true,
+              title: 'Konfirmasi Pesanan',
+              headerBackVisible: false,
             }}
           />
         </>

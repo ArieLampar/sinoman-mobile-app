@@ -5,6 +5,7 @@ import { RouteProp } from '@react-navigation/native';
 // Import types for params
 import { SavingsType, TransactionReceipt } from './savings.types';
 import { QRCodeData, MerchantInfo } from './qr.types';
+import { Product, Order } from './marketplace.types';
 
 // Root Stack
 export type RootStackParamList = {
@@ -25,6 +26,10 @@ export type RootStackParamList = {
   About: undefined;
   Terms: undefined;
   Privacy: undefined;
+  ProductDetail: { productId: string; product?: Product };
+  Cart: undefined;
+  Checkout: undefined;
+  OrderConfirmation: { orderId: string; order: Order };
 };
 
 // Auth Stack

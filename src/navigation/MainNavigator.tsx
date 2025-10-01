@@ -7,11 +7,15 @@ import { QRScannerScreen } from '../screens/qr/QRScannerScreen';
 import { MarketplaceScreen } from '../screens/marketplace/MarketplaceScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { BottomNavigation, BottomNavigationItem } from '../components/navigation';
+import { useMarketplaceStore } from '../store/marketplaceStore';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 // Custom tab bar component using our BottomNavigation
 const CustomTabBar = ({ state, descriptors, navigation }: any) => {
+  // Get cart item count from marketplace store
+  const cartItemCount = useMarketplaceStore((state) => state.cart.itemCount);
+
   // Icon mapping for each screen
   const iconMap: Record<string, { icon: string; focusedIcon?: string }> = {
     Dashboard: { icon: 'home', focusedIcon: 'home' },
@@ -27,8 +31,11 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
     const label = options.tabBarLabel ?? options.title ?? route.name;
     const iconConfig = iconMap[route.name] || { icon: 'circle' };
 
-    // Get badge from options (can be set via screenOptions or individually)
-    const badge = options.tabBarBadge;
+    // Get badge from options or set cart badge for Marketplace
+    let badge = options.tabBarBadge;
+    if (route.name === 'Marketplace' && cartItemCount > 0) {
+      badge = cartItemCount;
+    }
 
     return {
       key: route.key,
