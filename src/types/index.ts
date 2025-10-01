@@ -28,5 +28,8 @@ export * from './fitChallenge.types';
 // Notification types
 export * from './notification.types';
 
+// Security types
+export * from './security.types';
+
 // Additional types will be added in subsequent phases:
 // export * from './common.types';

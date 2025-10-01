@@ -16,7 +16,10 @@ module.exports = {
     'react/prop-types': 'off',
     'react-native/no-inline-styles': 'warn',
     'prettier/prettier': 'error',
-    'no-console': 'warn',
+    // Security: Enforce logger usage instead of console
+    'no-console': ['error', { allow: [] }], // No console.* allowed
+    'no-eval': 'error',
+    'no-implied-eval': 'error',
   },
   ignorePatterns: ['node_modules/', '*.config.js', '.expo/', 'dist/', 'build/'],
 };

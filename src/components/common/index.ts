@@ -14,3 +14,5 @@ export { TransactionItem } from './TransactionItem';
 export type { TransactionItemProps } from './TransactionItem';
 
 export { OfflineIndicator } from './OfflineIndicator';
+
+export { SecurityWarningModal } from './SecurityWarningModal';

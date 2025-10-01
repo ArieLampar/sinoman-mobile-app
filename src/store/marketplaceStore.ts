@@ -1,12 +1,14 @@
 /**
  * Marketplace Store
- * Zustand store for marketplace state management with MMKV persistence
+ * Zustand store for marketplace state management with MMKV persistence and dynamic encryption
  */
 
 import { create } from 'zustand';
 import { MMKV } from 'react-native-mmkv';
 import * as marketplaceService from '@services/marketplace';
 import { logger } from '@utils/logger';
+import { SECURITY } from '@utils/constants';
+import { getSecureItem, setSecureItem, generateEncryptionKey } from '@services/security';
 import type {
   Product,
   Category,
@@ -17,8 +19,44 @@ import type {
   PlaceOrderRequest,
 } from '@types';
 
-// MMKV storage for cart persistence
-const storage = new MMKV({ id: 'marketplace-cart' });
+// MMKV storage for cart persistence (initialized lazily with dynamic key)
+let storage: MMKV | null = null;
+
+/**
+ * Get or create encryption key for cart storage
+ */
+async function getOrCreateCartEncryptionKey(): Promise<string> {
+  try {
+    let key = await getSecureItem(SECURITY.SECURE_KEYS.MMKV_CART_KEY);
+
+    if (!key) {
+      // Generate new 256-bit encryption key
+      key = await generateEncryptionKey();
+      await setSecureItem(SECURITY.SECURE_KEYS.MMKV_CART_KEY, key);
+      logger.info('MMKV cart encryption key generated');
+    }
+
+    return key;
+  } catch (error: any) {
+    logger.error('Get cart encryption key error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get initialized cart storage instance
+ */
+async function getCartStorage(): Promise<MMKV> {
+  if (storage) return storage;
+
+  const encryptionKey = await getOrCreateCartEncryptionKey();
+  storage = new MMKV({
+    id: 'marketplace-cart',
+    encryptionKey, // Dynamic encryption key from secure storage
+  });
+
+  return storage;
+}
 
 /**
  * Calculate cart totals
@@ -48,9 +86,10 @@ function calculateCart(items: CartItem[]): Cart {
 /**
  * Load cart from MMKV storage
  */
-function loadCartFromStorage(): CartItem[] {
+async function loadCartFromStorage(): Promise<CartItem[]> {
   try {
-    const cartJson = storage.getString('@sinoman:cart');
+    const store = await getCartStorage();
+    const cartJson = store.getString('@sinoman:cart');
     if (!cartJson) return [];
 
     const items = JSON.parse(cartJson) as CartItem[];
@@ -65,9 +104,10 @@ function loadCartFromStorage(): CartItem[] {
 /**
  * Save cart to MMKV storage
  */
-function saveCartToStorage(items: CartItem[]): void {
+async function saveCartToStorage(items: CartItem[]): Promise<void> {
   try {
-    storage.set('@sinoman:cart', JSON.stringify(items));
+    const store = await getCartStorage();
+    store.set('@sinoman:cart', JSON.stringify(items));
     logger.info('Cart saved to storage', { itemCount: items.length });
   } catch (error) {
     logger.error('Failed to save cart to storage', error);
@@ -77,17 +117,23 @@ function saveCartToStorage(items: CartItem[]): void {
 /**
  * Marketplace Store
  */
-export const useMarketplaceStore = create<MarketplaceState>((set, get) => ({
-  // Initial State
-  products: [],
-  categories: [],
-  selectedCategory: null,
-  searchQuery: '',
-  viewMode: 'grid',
-  cart: calculateCart(loadCartFromStorage()),
-  isLoadingProducts: false,
-  isPlacingOrder: false,
-  error: null,
+export const useMarketplaceStore = create<MarketplaceState>((set, get) => {
+  // Initialize cart asynchronously
+  loadCartFromStorage().then(items => {
+    set({ cart: calculateCart(items) });
+  });
+
+  return {
+    // Initial State
+    products: [],
+    categories: [],
+    selectedCategory: null,
+    searchQuery: '',
+    viewMode: 'grid',
+    cart: calculateCart([]), // Start with empty cart, will be loaded async
+    isLoadingProducts: false,
+    isPlacingOrder: false,
+    error: null,
 
   // Product Actions
   fetchProducts: async (filter?: MarketplaceFilter) => {
@@ -162,7 +208,7 @@ export const useMarketplaceStore = create<MarketplaceState>((set, get) => ({
     }
 
     const newCart = calculateCart(newItems);
-    saveCartToStorage(newItems);
+    saveCartToStorage(newItems); // Async but not awaited (fire and forget)
     set({ cart: newCart });
   },
 
@@ -170,7 +216,7 @@ export const useMarketplaceStore = create<MarketplaceState>((set, get) => ({
     const { cart } = get();
     const newItems = cart.items.filter(item => item.product.id !== productId);
     const newCart = calculateCart(newItems);
-    saveCartToStorage(newItems);
+    saveCartToStorage(newItems); // Async but not awaited
     set({ cart: newCart });
     logger.info('Removed from cart', { productId });
   },
@@ -189,13 +235,13 @@ export const useMarketplaceStore = create<MarketplaceState>((set, get) => ({
     );
 
     const newCart = calculateCart(newItems);
-    saveCartToStorage(newItems);
+    saveCartToStorage(newItems); // Async but not awaited
     set({ cart: newCart });
     logger.info('Updated cart quantity', { productId, quantity });
   },
 
   clearCart: () => {
-    saveCartToStorage([]);
+    saveCartToStorage([]); // Async but not awaited
     set({ cart: calculateCart([]) });
     logger.info('Cart cleared');
   },
@@ -229,4 +275,5 @@ export const useMarketplaceStore = create<MarketplaceState>((set, get) => ({
       };
     }
   },
-}));
+  };
+});

@@ -37,3 +37,33 @@ export const SESSION = {
   TIMEOUT_MINUTES: 15,
   TOKEN_EXPIRY_HOURS: 1,
 };
+
+// Security Configuration
+export const SECURITY = {
+  // Encryption algorithms
+  ENCRYPTION_ALGORITHM: 'AES-256-GCM' as const,
+  SIGNATURE_ALGORITHM: 'HMAC-SHA256' as const,
+
+  // Request signing headers
+  SIGNATURE_HEADER: 'X-Sinoman-Signature',
+  TIMESTAMP_HEADER: 'X-Sinoman-Timestamp',
+  NONCE_HEADER: 'X-Sinoman-Nonce',
+
+  // Security constraints
+  MAX_TIMESTAMP_SKEW: 300, // 5 minutes in seconds
+
+  // Secure storage keys (encrypted via Keychain/Keystore)
+  SECURE_KEYS: {
+    AUTH_TOKEN: 'sinoman_secure_auth_token',
+    REFRESH_TOKEN: 'sinoman_secure_refresh_token',
+    USER_DATA: 'sinoman_secure_user_data',
+    HMAC_SECRET: 'sinoman_secure_hmac_secret',
+    MMKV_OFFLINE_KEY: 'sinoman_mmkv_offline_queue_key',
+    MMKV_CART_KEY: 'sinoman_mmkv_cart_key',
+  } as const,
+
+  // Device security policy
+  BLOCK_ON_JAILBREAK: false, // Set true to block jailbroken devices
+  BLOCK_ON_ROOT: false, // Set true to block rooted devices
+  WARN_ON_COMPROMISED: true, // Show warning modal
+} as const;

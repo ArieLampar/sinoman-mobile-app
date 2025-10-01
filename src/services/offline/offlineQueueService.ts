@@ -1,27 +1,64 @@
 /**
  * Offline Queue Service
- * Manages offline transaction queue using MMKV storage
+ * Manages offline transaction queue using MMKV storage with dynamic encryption
  */
 
 import { MMKV } from 'react-native-mmkv';
 import { QueuedTransaction, QRPaymentRequest, SyncResult } from '@types';
 import { processQRPayment } from '@services/qr';
 import { logger } from '@utils/logger';
-import { STORAGE_KEYS } from '@utils/constants';
+import { STORAGE_KEYS, SECURITY } from '@utils/constants';
+import { getSecureItem, setSecureItem, generateEncryptionKey } from '@services/security';
 
-// Initialize MMKV storage for offline queue
-const storage = new MMKV({
-  id: 'offline-queue',
-  encryptionKey: 'sinoman-offline-queue-key', // Basic encryption
-});
+// Storage instance (will be initialized lazily with dynamic key)
+let storage: MMKV | null = null;
+
+/**
+ * Get or create encryption key for MMKV storage
+ * @returns Encryption key from secure storage
+ */
+async function getOrCreateEncryptionKey(): Promise<string> {
+  try {
+    let key = await getSecureItem(SECURITY.SECURE_KEYS.MMKV_OFFLINE_KEY);
+
+    if (!key) {
+      // Generate new 256-bit encryption key
+      key = await generateEncryptionKey();
+      await setSecureItem(SECURITY.SECURE_KEYS.MMKV_OFFLINE_KEY, key);
+      logger.info('MMKV offline queue encryption key generated');
+    }
+
+    return key;
+  } catch (error: any) {
+    logger.error('Get MMKV encryption key error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get initialized MMKV storage instance
+ * @returns MMKV storage instance with encryption
+ */
+async function getStorage(): Promise<MMKV> {
+  if (storage) return storage;
+
+  const encryptionKey = await getOrCreateEncryptionKey();
+  storage = new MMKV({
+    id: 'offline-queue',
+    encryptionKey, // Dynamic encryption key from secure storage
+  });
+
+  return storage;
+}
 
 /**
  * Get all queued transactions from storage
  * @returns QueuedTransaction[] - Array of queued transactions
  */
-export function getQueue(): QueuedTransaction[] {
+export async function getQueue(): Promise<QueuedTransaction[]> {
   try {
-    const queueJson = storage.getString(STORAGE_KEYS.OFFLINE_QUEUE);
+    const store = await getStorage();
+    const queueJson = store.getString(STORAGE_KEYS.OFFLINE_QUEUE);
     if (!queueJson) return [];
 
     const queue = JSON.parse(queueJson) as QueuedTransaction[];
@@ -37,9 +74,10 @@ export function getQueue(): QueuedTransaction[] {
  * Save queue to storage
  * @param queue - Array of queued transactions to save
  */
-function saveQueue(queue: QueuedTransaction[]): void {
+async function saveQueue(queue: QueuedTransaction[]): Promise<void> {
   try {
-    storage.set(STORAGE_KEYS.OFFLINE_QUEUE, JSON.stringify(queue));
+    const store = await getStorage();
+    store.set(STORAGE_KEYS.OFFLINE_QUEUE, JSON.stringify(queue));
     logger.info('Offline queue saved:', queue.length);
   } catch (error) {
     logger.error('Save queue error:', error);
@@ -51,10 +89,10 @@ function saveQueue(queue: QueuedTransaction[]): void {
  * @param transaction - Transaction data to queue (without id, timestamp, retryCount, status)
  * @returns QueuedTransaction - The queued transaction with generated metadata
  */
-export function addToQueue(
+export async function addToQueue(
   transaction: Omit<QueuedTransaction, 'id' | 'timestamp' | 'retryCount' | 'status'>
-): QueuedTransaction {
-  const queue = getQueue();
+): Promise<QueuedTransaction> {
+  const queue = await getQueue();
 
   const queuedTransaction: QueuedTransaction = {
     ...transaction,
@@ -65,7 +103,7 @@ export function addToQueue(
   };
 
   queue.push(queuedTransaction);
-  saveQueue(queue);
+  await saveQueue(queue);
 
   logger.info('Transaction added to offline queue:', queuedTransaction.id);
   return queuedTransaction;
@@ -75,10 +113,10 @@ export function addToQueue(
  * Remove transaction from queue by ID
  * @param id - Transaction ID to remove
  */
-export function removeFromQueue(id: string): void {
-  const queue = getQueue();
+export async function removeFromQueue(id: string): Promise<void> {
+  const queue = await getQueue();
   const filtered = queue.filter((t) => t.id !== id);
-  saveQueue(filtered);
+  await saveQueue(filtered);
   logger.info('Transaction removed from queue:', id);
 }
 
@@ -87,7 +125,7 @@ export function removeFromQueue(id: string): void {
  * @returns Promise<SyncResult> - Result of sync operation
  */
 export async function syncQueue(): Promise<SyncResult> {
-  let queue = getQueue();
+  let queue = await getQueue();
 
   if (queue.length === 0) {
     return { success: true, syncedCount: 0, failedCount: 0 };
@@ -142,7 +180,7 @@ export async function syncQueue(): Promise<SyncResult> {
   queue = queue.filter((t) => !successfulIds.includes(t.id));
 
   // Save updated queue (only failed transactions remain)
-  saveQueue(queue);
+  await saveQueue(queue);
 
   logger.info('Queue sync completed:', { syncedCount, failedCount });
 
@@ -157,8 +195,9 @@ export async function syncQueue(): Promise<SyncResult> {
 /**
  * Clear all transactions from queue
  */
-export function clearQueue(): void {
-  storage.delete(STORAGE_KEYS.OFFLINE_QUEUE);
+export async function clearQueue(): Promise<void> {
+  const store = await getStorage();
+  store.delete(STORAGE_KEYS.OFFLINE_QUEUE);
   logger.info('Offline queue cleared');
 }
 
@@ -166,6 +205,7 @@ export function clearQueue(): void {
  * Get count of queued transactions
  * @returns number - Count of transactions in queue
  */
-export function getQueueCount(): number {
-  return getQueue().length;
+export async function getQueueCount(): Promise<number> {
+  const queue = await getQueue();
+  return queue.length;
 }
