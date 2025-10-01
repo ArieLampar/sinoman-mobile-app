@@ -2,11 +2,17 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { RouteProp } from '@react-navigation/native';
 
+// Import types for params
+import { SavingsType, TransactionReceipt } from './savings.types';
+import { QRCodeData, MerchantInfo } from './qr.types';
+
 // Root Stack
 export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
   TopUp: { savingsType?: SavingsType };
+  TransactionHistory: { savingsType?: SavingsType };
+  Receipt: { transactionId: string; receipt: TransactionReceipt };
   QRPayment: { qrData: QRCodeData; merchant?: MerchantInfo };
   QRGenerate: undefined;
   Settings: undefined;
@@ -20,10 +26,6 @@ export type RootStackParamList = {
   Terms: undefined;
   Privacy: undefined;
 };
-
-// Import types for params
-import { SavingsType } from './savings.types';
-import { QRCodeData, MerchantInfo } from './qr.types';
 
 // Auth Stack
 export type AuthStackParamList = {

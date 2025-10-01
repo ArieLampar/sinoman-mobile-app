@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MainTabScreenProps, SavingsType } from '@types';
 import { useSavingsStore } from '@store/savingsStore';
 import { BalanceCard } from '@components/dashboard/BalanceCard';
+import { MonthlyChart } from '@components/savings/MonthlyChart';
 import { TransactionItem } from '@components/common/TransactionItem';
 import { EmptyState } from '@components/common/EmptyState';
 import { formatCurrency } from '@utils/formatters';
@@ -16,18 +17,25 @@ export const SavingsScreen: React.FC<MainTabScreenProps<'Savings'>> = ({ navigat
   const {
     balance,
     transactions,
+    chartData,
     isLoading,
     currentPage,
     hasMore,
     fetchBalance,
     fetchTransactions,
+    fetchChartData,
     refreshData,
   } = useSavingsStore();
 
   useEffect(() => {
     fetchBalance();
     fetchTransactions(1);
+    fetchChartData(selectedType);
   }, [fetchBalance, fetchTransactions]);
+
+  useEffect(() => {
+    fetchChartData(selectedType);
+  }, [selectedType, fetchChartData]);
 
   const handleRefresh = async () => {
     await refreshData();
@@ -117,11 +125,29 @@ export const SavingsScreen: React.FC<MainTabScreenProps<'Savings'>> = ({ navigat
         </Text>
       </View>
 
+      {/* Monthly Chart */}
+      {chartData && chartData.labels.length > 0 && (
+        <View style={styles.chartSection}>
+          <MonthlyChart data={chartData} title={`Pertumbuhan ${getSelectedLabel()}`} />
+        </View>
+      )}
+
       {/* Transaction List */}
       <View style={styles.transactionSection}>
-        <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
-          Riwayat Transaksi
-        </Text>
+        <View style={styles.transactionHeader}>
+          <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+            Riwayat Transaksi
+          </Text>
+          {filteredTransactions.length > 0 && (
+            <Text
+              variant="bodyMedium"
+              style={[styles.seeAll, { color: theme.colors.primary }]}
+              onPress={() => (navigation as any).navigate('TransactionHistory', { savingsType: selectedType })}
+            >
+              Lihat Semua
+            </Text>
+          )}
+        </View>
 
         {isLoading && filteredTransactions.length === 0 ? (
           <View style={styles.loadingContainer}>
@@ -199,13 +225,25 @@ const styles = StyleSheet.create({
   balanceAmount: {
     fontWeight: '700',
   },
+  chartSection: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
   transactionSection: {
     flex: 1,
     paddingHorizontal: 16,
   },
+  transactionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
   sectionTitle: {
     fontWeight: '600',
-    marginBottom: 16,
+  },
+  seeAll: {
+    fontWeight: '600',
   },
   transactionList: {
     flex: 1,

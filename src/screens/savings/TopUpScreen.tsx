@@ -51,7 +51,7 @@ const QUICK_AMOUNTS = [50000, 100000, 200000, 500000, 1000000, 2000000];
 
 export const TopUpScreen: React.FC<TopUpScreenProps> = ({ navigation, route }) => {
   const theme = useTheme();
-  const { topUp, isLoading } = useSavingsStore();
+  const { topUp, generateReceipt, isLoading } = useSavingsStore();
 
   const [selectedType, setSelectedType] = useState<SavingsType>(
     route?.params?.savingsType || SavingsType.SUKARELA
@@ -101,16 +101,28 @@ export const TopUpScreen: React.FC<TopUpScreenProps> = ({ navigation, route }) =
       });
 
       if (result.status === 'success') {
-        Alert.alert(
-          'Top Up Berhasil',
-          `Saldo ${getSavingsTypeLabel(selectedType)} Anda telah bertambah ${formatCurrency(numericAmount)}`,
-          [
-            {
-              text: 'OK',
-              onPress: () => navigation.goBack(),
-            },
-          ]
-        );
+        // Generate receipt
+        const receipt = await generateReceipt(result.transactionId);
+
+        if (receipt) {
+          // Navigate to receipt screen
+          navigation.navigate('Receipt', {
+            transactionId: result.transactionId,
+            receipt
+          });
+        } else {
+          // Fallback if receipt generation fails
+          Alert.alert(
+            'Top Up Berhasil',
+            `Saldo ${getSavingsTypeLabel(selectedType)} Anda telah bertambah ${formatCurrency(numericAmount)}`,
+            [
+              {
+                text: 'OK',
+                onPress: () => navigation.goBack(),
+              },
+            ]
+          );
+        }
       } else if (result.status === 'pending' && result.paymentUrl) {
         // Navigate to payment page (WebView)
         // TODO: Implement payment WebView screen

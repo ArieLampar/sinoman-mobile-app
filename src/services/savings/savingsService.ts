@@ -9,6 +9,8 @@ import {
   SavingsType,
   ApiResponse,
   PaginatedResponse,
+  MonthlyChartData,
+  TransactionReceipt,
 } from '@types';
 
 /**
@@ -254,6 +256,143 @@ export async function fetchSavingsStats(savingsType?: SavingsType): Promise<any>
     };
   } catch (error: any) {
     logger.error('Fetch stats exception:', error);
+    return null;
+  }
+}
+
+/**
+ * Fetch monthly chart data for savings growth
+ * @param savingsType - Optional filter by savings type
+ * @param months - Number of months to fetch (default: 6)
+ * @returns Monthly chart data
+ */
+export async function fetchChartData(
+  savingsType?: SavingsType,
+  months: number = 6
+): Promise<MonthlyChartData> {
+  try {
+    logger.info('Fetching chart data:', { savingsType, months });
+
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - months);
+
+    let query = supabase
+      .from('transactions')
+      .select('type, amount, created_at, savings_type')
+      .gte('created_at', startDate.toISOString())
+      .lte('created_at', endDate.toISOString())
+      .order('created_at', { ascending: true });
+
+    if (savingsType) {
+      query = query.eq('savings_type', savingsType);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      logger.error('Fetch chart data error:', error.message);
+      return { labels: [], datasets: [{ data: [] }] };
+    }
+
+    // Aggregate by month
+    const monthlyData = new Map<string, { balance: number; month: string }>();
+    let runningBalance = 0;
+
+    // Initialize months
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+    for (let i = months - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const monthLabel = `${monthNames[date.getMonth()]} '${String(date.getFullYear()).slice(2)}`;
+      monthlyData.set(monthKey, { balance: 0, month: monthLabel });
+    }
+
+    // Process transactions
+    (data || []).forEach((transaction) => {
+      const date = new Date(transaction.created_at);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+      if (transaction.type === 'deposit') {
+        runningBalance += transaction.amount;
+      } else if (transaction.type === 'withdrawal') {
+        runningBalance -= transaction.amount;
+      }
+
+      if (monthlyData.has(monthKey)) {
+        monthlyData.set(monthKey, {
+          ...monthlyData.get(monthKey)!,
+          balance: runningBalance,
+        });
+      }
+    });
+
+    // Convert to chart format
+    const sortedData = Array.from(monthlyData.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([_, value]) => value);
+
+    const labels = sortedData.map((d) => d.month);
+    const balances = sortedData.map((d) => d.balance);
+
+    logger.info('Chart data fetched:', { labels, balances });
+
+    return {
+      labels,
+      datasets: [{ data: balances }],
+    };
+  } catch (error: any) {
+    logger.error('Fetch chart data exception:', error);
+    return { labels: [], datasets: [{ data: [] }] };
+  }
+}
+
+/**
+ * Generate receipt for a transaction
+ * @param transactionId - Transaction ID
+ * @returns Transaction receipt or null
+ */
+export async function generateReceipt(
+  transactionId: string
+): Promise<TransactionReceipt | null> {
+  try {
+    logger.info('Generating receipt for transaction:', transactionId);
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('id', transactionId)
+      .single();
+
+    if (error || !data) {
+      logger.error('Fetch transaction error:', error?.message);
+      return null;
+    }
+
+    // Fetch current balance
+    const balance = await fetchBalance();
+
+    const receipt: TransactionReceipt = {
+      transactionId: data.id,
+      type: data.type,
+      savingsType: data.savings_type,
+      amount: data.amount,
+      fee: data.fee || 0,
+      totalAmount: data.amount + (data.fee || 0),
+      paymentMethod: data.payment_method,
+      status: data.status,
+      timestamp: data.created_at,
+      referenceId: data.reference_id || `REF-${data.id.substring(0, 8).toUpperCase()}`,
+      description: data.description || `${data.type} ${data.savings_type}`,
+      balanceBefore: data.balance_before || 0,
+      balanceAfter: balance?.total || 0,
+    };
+
+    logger.info('Receipt generated successfully');
+    return receipt;
+  } catch (error: any) {
+    logger.error('Generate receipt exception:', error);
     return null;
   }
 }

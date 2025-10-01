@@ -6,6 +6,8 @@ import { RootStackParamList } from '@types';
 import { AuthNavigator } from './AuthNavigator';
 import { MainNavigator } from './MainNavigator';
 import { TopUpScreen } from '@screens/savings/TopUpScreen';
+import { TransactionHistoryScreen } from '@screens/savings/TransactionHistoryScreen';
+import { ReceiptScreen } from '@screens/savings/ReceiptScreen';
 import { QRPaymentScreen } from '@screens/qr/QRPaymentScreen';
 import { SettingsScreen } from '@screens/profile/SettingsScreen';
 import { useAuthStore } from '@store/authStore';
@@ -41,6 +43,23 @@ export const RootNavigator: React.FC = () => {
             options={{
               headerShown: true,
               title: 'Top Up Simpanan',
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="TransactionHistory"
+            component={TransactionHistoryScreen}
+            options={{
+              headerShown: true,
+              title: 'Riwayat Transaksi',
+            }}
+          />
+          <Stack.Screen
+            name="Receipt"
+            component={ReceiptScreen}
+            options={{
+              headerShown: true,
+              title: 'Struk Transaksi',
               presentation: 'modal',
             }}
           />

@@ -3,8 +3,10 @@ import { SavingsState, Balance, Transaction, TopUpRequest, WithdrawalRequest, Sa
 import {
   fetchBalance as fetchBalanceService,
   fetchTransactions as fetchTransactionsService,
+  fetchChartData as fetchChartDataService,
   topUp as topUpService,
   withdraw as withdrawService,
+  generateReceipt as generateReceiptService,
 } from '@services/savings';
 import { logger } from '@utils/logger';
 
@@ -12,6 +14,7 @@ export const useSavingsStore = create<SavingsState>((set, get) => ({
   // Initial State
   balance: null,
   transactions: [],
+  chartData: null,
   isLoading: false,
   error: null,
   currentPage: 1,
@@ -116,11 +119,37 @@ export const useSavingsStore = create<SavingsState>((set, get) => ({
     }
   },
 
+  fetchChartData: async (savingsType?: SavingsType) => {
+    try {
+      set({ isLoading: true, error: null });
+
+      const chartData = await fetchChartDataService(savingsType, 6);
+
+      set({ chartData, isLoading: false });
+      logger.info('Chart data fetched successfully');
+    } catch (error: any) {
+      logger.error('Fetch chart data error:', error);
+      set({ error: error.message, isLoading: false });
+    }
+  },
+
+  generateReceipt: async (transactionId: string) => {
+    try {
+      const receipt = await generateReceiptService(transactionId);
+      logger.info('Receipt generated successfully');
+      return receipt;
+    } catch (error: any) {
+      logger.error('Generate receipt error:', error);
+      return null;
+    }
+  },
+
   refreshData: async () => {
     try {
       await Promise.all([
         get().fetchBalance(),
         get().fetchTransactions(1),
+        get().fetchChartData(),
       ]);
     } catch (error: any) {
       logger.error('Refresh data error:', error);
@@ -130,6 +159,7 @@ export const useSavingsStore = create<SavingsState>((set, get) => ({
   // State Setters
   setBalance: (balance: Balance) => set({ balance }),
   setTransactions: (transactions: Transaction[]) => set({ transactions }),
+  setChartData: (chartData) => set({ chartData }),
   setLoading: (isLoading: boolean) => set({ isLoading }),
   setError: (error: string | null) => set({ error }),
 }));

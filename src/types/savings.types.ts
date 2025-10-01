@@ -71,10 +71,36 @@ export interface SavingsStats {
   transactionCount: number;
 }
 
+export interface TransactionReceipt {
+  transactionId: string;
+  type: 'deposit' | 'withdrawal' | 'transfer' | 'payment';
+  savingsType: SavingsType;
+  amount: number;
+  fee: number;
+  totalAmount: number;
+  paymentMethod?: PaymentMethod;
+  status: 'pending' | 'success' | 'failed';
+  timestamp: string;
+  referenceId?: string;
+  description: string;
+  balanceBefore: number;
+  balanceAfter: number;
+}
+
+export interface MonthlyChartData {
+  labels: string[]; // ['Jan', 'Feb', 'Mar']
+  datasets: {
+    data: number[];
+    color?: (opacity: number) => string;
+    strokeWidth?: number;
+  }[];
+}
+
 // Savings Store State
 export interface SavingsState {
   balance: Balance | null;
   transactions: Transaction[];
+  chartData: MonthlyChartData | null;
   isLoading: boolean;
   error: string | null;
   currentPage: number;
@@ -83,13 +109,16 @@ export interface SavingsState {
   // Actions
   fetchBalance: () => Promise<void>;
   fetchTransactions: (page?: number) => Promise<void>;
+  fetchChartData: (savingsType?: SavingsType) => Promise<void>;
   topUp: (request: TopUpRequest) => Promise<TopUpResponse>;
   withdraw: (request: WithdrawalRequest) => Promise<void>;
+  generateReceipt: (transactionId: string) => Promise<TransactionReceipt | null>;
   refreshData: () => Promise<void>;
 
   // State Setters
   setBalance: (balance: Balance) => void;
   setTransactions: (transactions: Transaction[]) => void;
+  setChartData: (chartData: MonthlyChartData) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 }
