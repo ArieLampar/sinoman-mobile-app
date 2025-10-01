@@ -1,40 +1,40 @@
-import { MD3LightTheme, MD3Theme } from 'react-native-paper';
+import { MD3LightTheme } from 'react-native-paper';
+import type { AppTheme } from '../types/theme.d';
+import { colors } from './colors';
+import { typography, fontFamilies, fontWeights, loadFonts } from './typography';
+import { spacing, componentSpacing, layoutSpacing } from './spacing';
 
-// Brand colors from PRD
-const brandColors = {
-  primary: '#059669', // Primary Green
-  primaryDark: '#047857',
-  primaryLight: '#10B981',
-  secondary: '#F59E0B', // Amber
-  secondaryDark: '#D97706',
-  secondaryLight: '#FCD34D',
-};
-
-// Semantic colors from PRD
-const semanticColors = {
-  success: '#22C55E',
-  warning: '#F59E0B',
-  error: '#EF4444',
-  info: '#3B82F6',
-};
-
-export const theme: MD3Theme = {
+export const theme: AppTheme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    primary: brandColors.primary,
-    primaryContainer: brandColors.primaryLight,
-    secondary: brandColors.secondary,
-    secondaryContainer: brandColors.secondaryLight,
-    error: semanticColors.error,
-    // Additional color customizations will be added in Design System phase
+    primary: colors.brand.primary,
+    primaryContainer: colors.brand.primaryLight,
+    secondary: colors.brand.secondary,
+    secondaryContainer: colors.brand.secondaryLight,
+    error: colors.semantic.error,
+    background: colors.surface.background,
+    surface: colors.surface.surface,
+  },
+  custom: {
+    colors,
+    typography,
+    spacing,
+    componentSpacing,
+    layoutSpacing,
+    fontFamilies,
+    fontWeights,
   },
 };
 
-// Export colors for use in StyleSheet
-export const colors = {
-  ...brandColors,
-  ...semanticColors,
-};
+export const useAppTheme = (): AppTheme => theme;
 
-// Full design system (typography, spacing) will be added in next phase
+// Export all design tokens
+export { colors, typography, spacing, loadFonts };
+export { fontFamilies, fontWeights };
+export { componentSpacing, layoutSpacing };
+
+// Export types
+export type { Colors } from './colors';
+export type { Typography } from './typography';
+export type { Spacing } from './spacing';

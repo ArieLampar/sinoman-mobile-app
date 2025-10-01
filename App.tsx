@@ -4,10 +4,14 @@ import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
-import { RootNavigator } from '@navigation';
-import { theme } from '@theme';
-import { useInactivityTimer } from '@hooks/useInactivityTimer';
-import { logger } from '@utils/logger';
+import * as SplashScreen from 'expo-splash-screen';
+import { RootNavigator } from './src/navigation';
+import { theme, loadFonts } from './src/theme';
+import { useInactivityTimer } from './src/hooks';
+import { logger } from './src/utils/logger';
+
+// Prevent auto-hide of splash screen
+SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
   // Enable inactivity timer for auto-logout
@@ -29,12 +33,13 @@ export default function App() {
       try {
         logger.info('App initialization started');
 
-        // TODO: Load custom fonts
-        // await Font.loadAsync({
-        //   'Inter-Regular': require('./assets/fonts/Inter-Regular.ttf'),
-        //   'Inter-SemiBold': require('./assets/fonts/Inter-SemiBold.ttf'),
-        //   'Inter-Bold': require('./assets/fonts/Inter-Bold.ttf'),
-        // });
+        // Load custom fonts
+        const fontsLoaded = await loadFonts();
+        if (fontsLoaded) {
+          logger.info('Inter fonts loaded successfully');
+        } else {
+          logger.warn('Falling back to system fonts');
+        }
 
         // TODO: Initialize analytics
         // await initAnalytics();
@@ -44,6 +49,7 @@ export default function App() {
         logger.error('App initialization error:', error);
       } finally {
         setIsReady(true);
+        await SplashScreen.hideAsync();
       }
     }
 

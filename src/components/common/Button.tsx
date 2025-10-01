@@ -1,8 +1,9 @@
 import React from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
-import { Button as PaperButton, useTheme } from 'react-native-paper';
+import { Button as PaperButton } from 'react-native-paper';
+import { useAppTheme } from '../../theme';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'text';
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'text';
 export type ButtonSize = 'small' | 'medium' | 'large';
 
 interface ButtonProps {
@@ -28,7 +29,7 @@ export const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   style,
 }) => {
-  const theme = useTheme();
+  const theme = useAppTheme();
 
   const getButtonMode = (): 'text' | 'outlined' | 'contained' | 'elevated' | 'contained-tonal' => {
     switch (variant) {
@@ -38,6 +39,8 @@ export const Button: React.FC<ButtonProps> = ({
         return 'contained-tonal';
       case 'outline':
         return 'outlined';
+      case 'ghost':
+        return 'text';
       case 'text':
         return 'text';
       default:
@@ -47,11 +50,16 @@ export const Button: React.FC<ButtonProps> = ({
 
   const getButtonStyle = (): ViewStyle => {
     const baseStyle: ViewStyle = {
-      borderRadius: 8,
+      borderRadius: theme.custom.layoutSpacing.borderRadius.md,
     };
 
     if (fullWidth) {
       baseStyle.width = '100%';
+    }
+
+    // Ghost variant should have transparent background
+    if (variant === 'ghost') {
+      baseStyle.backgroundColor = 'transparent';
     }
 
     switch (size) {
@@ -61,7 +69,7 @@ export const Button: React.FC<ButtonProps> = ({
         return { ...baseStyle, minHeight: 56 };
       case 'medium':
       default:
-        return { ...baseStyle, minHeight: 44 };
+        return { ...baseStyle, minHeight: theme.custom.layoutSpacing.minTouchTarget };
     }
   };
 
@@ -89,6 +97,13 @@ export const Button: React.FC<ButtonProps> = ({
     }
   };
 
+  const getTextColor = () => {
+    if (variant === 'ghost') {
+      return theme.custom.colors.brand.primary;
+    }
+    return undefined;
+  };
+
   return (
     <PaperButton
       mode={getButtonMode()}
@@ -99,6 +114,7 @@ export const Button: React.FC<ButtonProps> = ({
       style={[styles.button, getButtonStyle(), style]}
       contentStyle={[styles.content, getContentStyle()]}
       labelStyle={[styles.label, getLabelStyle()]}
+      textColor={getTextColor()}
     >
       {children}
     </PaperButton>

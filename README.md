@@ -13,6 +13,14 @@ Mobile application untuk anggota Koperasi Sinoman Ponorogo yang menyediakan akse
 - **Auth**: Supabase Auth
 - **Storage**: Cloudinary
 
+## ⚠️ Important: Asset Setup Required
+
+This app requires three image assets (icon, splash screen, adaptive icon) that are **not included** in the repository. You must generate them before running the app.
+
+**📖 Quick Setup Guide**: See [ASSETS_SETUP.md](ASSETS_SETUP.md) for complete instructions.
+
+**🚀 Fast Track**: Open `scripts/generate-assets.html` in your browser to generate assets instantly.
+
 ## Prerequisites
 
 - Node.js 18+
@@ -42,7 +50,26 @@ cp .env.example .env
 # EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-### 3. Run Development Server
+### 3. Generate Placeholder Assets
+
+The app requires icon and splash screen assets. Generate placeholder assets for development:
+
+```bash
+# Install sharp for image generation
+npm install sharp
+
+# Generate placeholder assets
+npm run generate-assets
+```
+
+Or manually create the required files in `assets/` directory:
+- `icon.png` (1024x1024)
+- `splash.png` (1284x2778)
+- `adaptive-icon.png` (1024x1024)
+
+See [assets/README.md](assets/README.md) for detailed instructions.
+
+### 4. Run Development Server
 
 ```bash
 # Start Expo dev server
@@ -101,6 +128,7 @@ sinoman-mobile-app/
 - `npm run android` - Run on Android emulator/device
 - `npm run ios` - Run on iOS simulator/device
 - `npm run web` - Run on web browser
+- `npm run generate-assets` - Generate placeholder icon/splash assets
 - `npm run lint` - Run ESLint checks
 - `npm run lint:fix` - Auto-fix ESLint issues
 - `npm run format` - Format code with Prettier
@@ -223,6 +251,17 @@ Proprietary - Koperasi Sinoman Ponorogo
 
 ---
 
-**Status**: Phase 1 - Foundation Setup Complete ✅
+## Implementation Status
 
-**Next Phase**: Authentication System (Phone + OTP + Biometric)
+✅ **Phase 1**: Foundation Setup (Navigation, Services, Types)
+✅ **Phase 2**: Authentication System (Phone OTP, Biometric)
+✅ **Phase 3**: Dashboard & Savings (Balance, Transactions, Top Up)
+✅ **Phase 4**: QR Payment & Profile (Scanner, Payment, Settings)
+
+**Current Status**: MVP Complete - Ready for Testing 🎉
+
+**See Documentation**:
+- [Phase 1 Summary](IMPLEMENTATION_SUMMARY.md)
+- [Phase 2 Complete](PHASE_2_COMPLETE.md)
+- [Phase 3 Complete](docs/PHASE_3_COMPLETE.md)
+- [Phase 4 Complete](docs/PHASE_4_COMPLETE.md)

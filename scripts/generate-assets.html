@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Sinoman App Assets</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #059669;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        button {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #047857;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .preview {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            display: none;
+        }
+        .preview.show {
+            display: block;
+        }
+        .preview img {
+            max-width: 200px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin: 10px;
+        }
+        .instructions {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .status {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #047857;
+            border: 1px solid #059669;
+            display: block;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Sinoman Mobile App Asset Generator</h1>
+        <p class="subtitle">Generate placeholder assets for development</p>
+
+        <div class="instructions">
+            <strong>⚠️ Instructions:</strong>
+            <ol>
+                <li>Click each "Generate" button below</li>
+                <li>Right-click the generated image and "Save As..."</li>
+                <li>Save to the <code>assets/</code> directory with the exact filename shown</li>
+                <li>Repeat for all three assets</li>
+            </ol>
+        </div>
+
+        <h2>1. App Icon (icon.png)</h2>
+        <p>Size: 1024x1024 pixels</p>
+        <button onclick="generateIcon()">Generate Icon</button>
+        <div id="icon-preview" class="preview"></div>
+        <div id="icon-status" class="status"></div>
+
+        <h2>2. Splash Screen (splash.png)</h2>
+        <p>Size: 1284x2778 pixels</p>
+        <button onclick="generateSplash()">Generate Splash</button>
+        <div id="splash-preview" class="preview"></div>
+        <div id="splash-status" class="status"></div>
+
+        <h2>3. Adaptive Icon (adaptive-icon.png)</h2>
+        <p>Size: 1024x1024 pixels</p>
+        <button onclick="generateAdaptiveIcon()">Generate Adaptive Icon</button>
+        <div id="adaptive-preview" class="preview"></div>
+        <div id="adaptive-status" class="status"></div>
+
+        <div class="instructions" style="margin-top: 30px; background: #dbeafe; border-color: #3b82f6;">
+            <strong>ℹ️ Alternative Method:</strong><br>
+            If you have Node.js and npm installed, you can generate all assets at once:
+            <pre style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px;"><code>npm install sharp
+npm run generate-assets</code></pre>
+        </div>
+    </div>
+
+    <script>
+        const BRAND_GREEN = '#059669';
+        const WHITE = '#FFFFFF';
+
+        function generateIcon() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+
+            // Background with rounded corners
+            ctx.fillStyle = BRAND_GREEN;
+            roundRect(ctx, 0, 0, 1024, 1024, 180);
+            ctx.fill();
+
+            // White "S" letter
+            ctx.fillStyle = WHITE;
+            ctx.font = 'bold 600px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('S', 512, 540);
+
+            showPreview('icon', canvas);
+            showStatus('icon', 'Right-click the image and save as "icon.png" in the assets/ folder', 'info');
+        }
+
+        function generateSplash() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1284;
+            canvas.height = 2778;
+            const ctx = canvas.getContext('2d');
+
+            // Green background
+            ctx.fillStyle = BRAND_GREEN;
+            ctx.fillRect(0, 0, 1284, 2778);
+
+            // White circle background (subtle)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.beginPath();
+            ctx.arc(642, 1389, 200, 0, Math.PI * 2);
+            ctx.fill();
+
+            // "SINOMAN" text
+            ctx.fillStyle = WHITE;
+            ctx.font = 'bold 100px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('SINOMAN', 642, 1350);
+
+            // Tagline
+            ctx.font = '32px Arial';
+            ctx.fillText('Sehat Bareng, Kaya Bareng', 642, 1430);
+
+            showPreview('splash', canvas);
+            showStatus('splash', 'Right-click the image and save as "splash.png" in the assets/ folder', 'info');
+        }
+
+        function generateAdaptiveIcon() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+
+            // Transparent background
+            ctx.clearRect(0, 0, 1024, 1024);
+
+            // White circle
+            ctx.fillStyle = WHITE;
+            ctx.beginPath();
+            ctx.arc(512, 512, 380, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Green "S" letter
+            ctx.fillStyle = BRAND_GREEN;
+            ctx.font = 'bold 500px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('S', 512, 540);
+
+            showPreview('adaptive', canvas);
+            showStatus('adaptive', 'Right-click the image and save as "adaptive-icon.png" in the assets/ folder', 'info');
+        }
+
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        function showPreview(type, canvas) {
+            const preview = document.getElementById(`${type}-preview`);
+            preview.innerHTML = '';
+            preview.className = 'preview show';
+
+            const img = document.createElement('img');
+            img.src = canvas.toDataURL('image/png');
+            img.alt = `${type} preview`;
+            preview.appendChild(img);
+
+            // Add download link as fallback
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/png');
+            link.download = type === 'adaptive' ? 'adaptive-icon.png' : `${type}.png`;
+            link.textContent = `Or click here to download directly`;
+            link.style.display = 'block';
+            link.style.marginTop = '10px';
+            link.style.color = BRAND_GREEN;
+            preview.appendChild(link);
+        }
+
+        function showStatus(type, message, statusType) {
+            const status = document.getElementById(`${type}-status`);
+            status.textContent = message;
+            status.className = `status ${statusType}`;
+        }
+
+        // Auto-generate all on page load for convenience
+        window.addEventListener('load', () => {
+            console.log('Sinoman Asset Generator ready');
+            console.log('Click buttons to generate placeholder assets');
+        });
+    </script>
+</body>
+</html>
