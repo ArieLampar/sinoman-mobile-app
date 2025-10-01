@@ -1,13 +1,16 @@
 /**
  * ProductCard Component
  * Displays product information in grid or list view
+ * Optimized with expo-image and React.memo for better performance
  */
 
 import React from 'react';
-import { View, StyleSheet, Pressable, Image } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
+import { Image } from 'expo-image';
 import { Text, Badge, useTheme } from 'react-native-paper';
 import type { Product } from '@types';
 import { formatCurrency } from '@utils/formatters';
+import { ImagePresets, BlurhashPresets } from '@utils/imageCache';
 
 interface ProductCardProps {
   product: Product;
@@ -15,7 +18,7 @@ interface ProductCardProps {
   viewMode?: 'grid' | 'list';
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({
+const ProductCardComponent: React.FC<ProductCardProps> = ({
   product,
   onPress,
   viewMode = 'grid',
@@ -31,7 +34,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <Image
           source={{ uri: product.images[0] }}
           style={styles.listImage}
-          resizeMode="cover"
+          contentFit="cover"
+          {...ImagePresets.thumbnail}
+          placeholder={{ blurhash: BlurhashPresets.product }}
         />
         <View style={styles.listContent}>
           <Text variant="titleMedium" numberOfLines={2}>
@@ -78,7 +83,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         <Image
           source={{ uri: product.images[0] }}
           style={styles.gridImage}
-          resizeMode="cover"
+          contentFit="cover"
+          {...ImagePresets.thumbnail}
+          placeholder={{ blurhash: BlurhashPresets.product }}
         />
         {product.discount && product.discount > 0 && (
           <Badge style={[styles.gridDiscountBadge, { backgroundColor: theme.colors.error }]}>
@@ -112,6 +119,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     </Pressable>
   );
 };
+
+// Memoize component to prevent unnecessary re-renders
+export const ProductCard = React.memo<ProductCardProps>(
+  ProductCardComponent,
+  (prevProps, nextProps) => {
+    // Custom comparison: only re-render if product or viewMode changes
+    return (
+      prevProps.product.id === nextProps.product.id &&
+      prevProps.product.price === nextProps.product.price &&
+      prevProps.product.stock === nextProps.product.stock &&
+      prevProps.viewMode === nextProps.viewMode
+    );
+  }
+);
 
 const styles = StyleSheet.create({
   // List View Styles

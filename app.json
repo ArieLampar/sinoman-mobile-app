@@ -15,6 +15,7 @@
     "android": {
       "package": "id.sinomanapp.mobile",
       "versionCode": 1,
+      "enableHermes": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#059669"
@@ -31,6 +32,7 @@
     "ios": {
       "bundleIdentifier": "id.sinomanapp.mobile",
       "buildNumber": "1.0.0",
+      "jsEngine": "hermes",
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Aplikasi memerlukan akses kamera untuk scan QR code pembayaran",

@@ -1,10 +1,11 @@
 /**
  * Marketplace Screen
  * Main shopping interface with product grid/list, search, filters, and cart
+ * Optimized with memoization and FlatList performance props
  */
 
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, FlatList, ScrollView } from 'react-native';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { View, StyleSheet, FlatList, ScrollView, ListRenderItem } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Searchbar,
@@ -49,28 +50,58 @@ export const MarketplaceScreen: React.FC = () => {
     fetchProducts();
   }, []);
 
-  const handleSearch = () => {
+  // Memoize callbacks to prevent unnecessary re-renders
+  const handleSearch = useCallback(() => {
     setSearchQuery(localSearchQuery);
     fetchProducts({
       searchQuery: localSearchQuery,
       categoryId: selectedCategory,
     });
-  };
+  }, [localSearchQuery, selectedCategory, setSearchQuery, fetchProducts]);
 
-  const handleCategorySelect = (categoryId: string | null) => {
+  const handleCategorySelect = useCallback((categoryId: string | null) => {
     setSelectedCategory(categoryId);
-  };
+  }, [setSelectedCategory]);
 
-  const handleProductPress = (product: Product) => {
+  const handleProductPress = useCallback((product: Product) => {
     navigation.navigate('ProductDetail', {
       productId: product.id,
       product,
     });
-  };
+  }, [navigation]);
 
-  const handleCartPress = () => {
+  const handleCartPress = useCallback(() => {
     navigation.navigate('Cart');
-  };
+  }, [navigation]);
+
+  const handleRefresh = useCallback(() => {
+    fetchProducts({ categoryId: selectedCategory });
+  }, [fetchProducts, selectedCategory]);
+
+  // Memoize renderItem to prevent recreation on every render
+  const renderItem: ListRenderItem<Product> = useCallback(
+    ({ item }) => (
+      <ProductCard
+        product={item}
+        viewMode={viewMode}
+        onPress={handleProductPress}
+      />
+    ),
+    [viewMode, handleProductPress]
+  );
+
+  // Memoize keyExtractor
+  const keyExtractor = useCallback((item: Product) => item.id, []);
+
+  // Calculate item layout for better performance
+  const getItemLayout = useCallback(
+    (_data: Product[] | null | undefined, index: number) => ({
+      length: viewMode === 'grid' ? 240 : 130,
+      offset: (viewMode === 'grid' ? 240 : 130) * index,
+      index,
+    }),
+    [viewMode]
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -160,20 +191,21 @@ export const MarketplaceScreen: React.FC = () => {
       ) : (
         <FlatList
           data={products}
-          renderItem={({ item }) => (
-            <ProductCard
-              product={item}
-              viewMode={viewMode}
-              onPress={handleProductPress}
-            />
-          )}
-          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
           numColumns={viewMode === 'grid' ? 2 : 1}
           key={viewMode} // Force re-render when view mode changes
           contentContainerStyle={styles.productsList}
           showsVerticalScrollIndicator={false}
           refreshing={isLoadingProducts}
-          onRefresh={() => fetchProducts({ categoryId: selectedCategory })}
+          onRefresh={handleRefresh}
+          // Performance optimizations
+          windowSize={5}
+          maxToRenderPerBatch={10}
+          initialNumToRender={10}
+          removeClippedSubviews={true}
+          updateCellsBatchingPeriod={50}
+          getItemLayout={getItemLayout}
         />
       )}
 

@@ -1,10 +1,12 @@
 /**
  * Product Detail Screen
  * Displays detailed product information with image carousel and add-to-cart
+ * Optimized with memoization and expo-image for better performance
  */
 
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Image, Dimensions, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { View, StyleSheet, ScrollView, Dimensions, Alert, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Text,
@@ -20,6 +22,7 @@ import type { RouteProp } from '@react-navigation/native';
 import type { RootStackParamList, Product } from '@types';
 import { useMarketplaceStore } from '@store/marketplaceStore';
 import { formatCurrency } from '@utils/formatters';
+import { ImagePresets, BlurhashPresets } from '@utils/imageCache';
 import * as marketplaceService from '@services/marketplace';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ProductDetail'>;
@@ -90,15 +93,16 @@ export const ProductDetailScreen: React.FC = () => {
     }
   }, [routeProduct, productId, products, navigation]);
 
-  const handleQuantityChange = (delta: number) => {
+  // Memoize callbacks and calculations
+  const handleQuantityChange = useCallback((delta: number) => {
     if (!product) return;
     const newQuantity = quantity + delta;
     if (newQuantity >= 1 && newQuantity <= product.stock) {
       setQuantity(newQuantity);
     }
-  };
+  }, [product, quantity]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = useCallback(() => {
     if (!product) return;
     addToCart(product, quantity, notes);
     Alert.alert(
@@ -116,11 +120,17 @@ export const ProductDetailScreen: React.FC = () => {
         },
       ]
     );
-  };
+  }, [product, quantity, notes, addToCart, navigation]);
 
-  const discountAmount = product?.originalPrice
-    ? product.originalPrice - product.price
-    : 0;
+  const discountAmount = useMemo(() =>
+    product?.originalPrice ? product.originalPrice - product.price : 0,
+    [product?.originalPrice, product?.price]
+  );
+
+  const totalPrice = useMemo(() =>
+    product ? product.price * quantity : 0,
+    [product?.price, quantity]
+  );
 
   // Show loading state
   if (isLoading || !product) {
@@ -158,7 +168,10 @@ export const ProductDetailScreen: React.FC = () => {
                 key={index}
                 source={{ uri: imageUri }}
                 style={styles.image}
-                resizeMode="cover"
+                contentFit="cover"
+                {...ImagePresets.highPriority}
+                placeholder={{ blurhash: BlurhashPresets.product }}
+                priority={index === 0 ? 'high' : 'normal'}
               />
             ))}
           </ScrollView>
@@ -327,7 +340,7 @@ export const ProductDetailScreen: React.FC = () => {
               Total Price
             </Text>
             <Text variant="headlineSmall" style={{ color: theme.colors.primary }}>
-              {formatCurrency(product.price * quantity)}
+              {formatCurrency(totalPrice)}
             </Text>
           </View>
           <Button
