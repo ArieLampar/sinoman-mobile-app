@@ -43,6 +43,8 @@
     "react-native-url-polyfill": "^2.0.0",
     "react-native-vector-icons": "^10.0.0",
     "react-native-otp-verify": "^1.1.8",
+    "react-native-reanimated-carousel": "^3.5.1",
+    "react-native-skeleton-placeholder": "^5.2.4",
     "zustand": "^4.4.0"
   },
   "devDependencies": {

@@ -1,14 +1,17 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { Text, useTheme, Divider } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MainTabScreenProps } from '@types';
-import { useDashboardStore } from '@store/dashboardStore';
+import { MainTabScreenProps, PromotionalBanner } from '@types';
+import { useDashboard } from '@hooks/useDashboard';
 import { useAuthStore } from '@store/authStore';
 import { BalanceCard } from '@components/dashboard/BalanceCard';
 import { QuickActionButton } from '@components/dashboard/QuickActionButton';
+import { BannerCarousel } from '@components/dashboard/BannerCarousel';
+import { DashboardSkeleton } from '@components/dashboard/DashboardSkeleton';
 import { TransactionItem } from '@components/common/TransactionItem';
 import { EmptyState } from '@components/common/EmptyState';
+import { logger } from '@utils/logger';
 
 export const DashboardScreen: React.FC<MainTabScreenProps<'Dashboard'>> = ({ navigation }) => {
   const theme = useTheme();
@@ -16,18 +19,46 @@ export const DashboardScreen: React.FC<MainTabScreenProps<'Dashboard'>> = ({ nav
   const {
     balance,
     recentTransactions,
+    banners,
     stats,
     isLoading,
-    fetchDashboardData,
     refreshDashboard,
-  } = useDashboardStore();
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+  } = useDashboard();
 
   const handleRefresh = async () => {
     await refreshDashboard();
+  };
+
+  const handleBannerPress = (banner: PromotionalBanner) => {
+    logger.info('Banner pressed:', banner.id, banner.actionUrl);
+
+    if (!banner.actionUrl) {
+      return;
+    }
+
+    // Map actionUrl to actual route names
+    const routeMap: Record<string, string> = {
+      '/savings': 'Savings',
+      '/topup': 'TopUp',
+      '/top-up': 'TopUp',
+      '/marketplace': 'Marketplace',
+      '/fit-challenge': 'FitChallenge',
+      '/qr-scanner': 'QRScanner',
+      '/profile': 'Profile',
+      '/health': 'Health',
+    };
+
+    const routeName = routeMap[banner.actionUrl.toLowerCase()];
+
+    if (routeName) {
+      try {
+        (navigation as any).navigate(routeName);
+      } catch (error) {
+        logger.error('Navigation error:', error);
+      }
+    } else {
+      logger.warn('Unknown banner actionUrl:', banner.actionUrl);
+    }
   };
 
   const quickActions = [
@@ -56,95 +87,103 @@ export const DashboardScreen: React.FC<MainTabScreenProps<'Dashboard'>> = ({ nav
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text variant="titleSmall" style={{ color: theme.colors.onSurfaceVariant }}>
-              Selamat Datang,
-            </Text>
-            <Text variant="headlineSmall" style={[styles.userName, { color: theme.colors.onSurface }]}>
-              {user?.name || 'Member Sinoman'}
-            </Text>
-          </View>
-        </View>
-
-        {/* Balance Card */}
-        <View style={styles.section}>
-          <BalanceCard
-            balance={balance}
-            isLoading={isLoading}
-            onPress={() => navigation.navigate('Savings')}
-          />
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.section}>
-          <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
-            Aksi Cepat
-          </Text>
-          <View style={styles.quickActions}>
-            {quickActions.map((action, index) => (
-              <QuickActionButton
-                key={index}
-                icon={action.icon}
-                label={action.label}
-                onPress={action.onPress}
-                color={action.color}
-              />
-            ))}
-          </View>
-        </View>
-
-        {/* Recent Transactions */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
-              Transaksi Terakhir
-            </Text>
-            {recentTransactions.length > 0 && (
-              <Text
-                variant="bodyMedium"
-                style={[styles.seeAll, { color: theme.colors.primary }]}
-                onPress={() => navigation.navigate('Savings')}
-              >
-                Lihat Semua
+      {isLoading && !balance ? (
+        // Show skeleton on initial load
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <DashboardSkeleton />
+        </ScrollView>
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          refreshControl={
+            <RefreshControl refreshing={isLoading && !!balance} onRefresh={handleRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <View>
+              <Text variant="titleSmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                Selamat Datang,
               </Text>
-            )}
-          </View>
-
-          {isLoading ? (
-            <View style={styles.loadingContainer}>
-              <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
-                Memuat transaksi...
+              <Text variant="headlineSmall" style={[styles.userName, { color: theme.colors.onSurface }]}>
+                {user?.name || 'Member Sinoman'}
               </Text>
             </View>
-          ) : recentTransactions.length > 0 ? (
-            <View style={[styles.transactionList, { backgroundColor: theme.colors.surface }]}>
-              {recentTransactions.map((transaction, index) => (
-                <React.Fragment key={transaction.id}>
-                  <TransactionItem transaction={transaction} />
-                  {index < recentTransactions.length - 1 && <Divider />}
-                </React.Fragment>
+          </View>
+
+          {/* Balance Card */}
+          <View style={styles.section}>
+            <BalanceCard
+              balance={balance}
+              isLoading={false}
+              onPress={() => navigation.navigate('Savings')}
+            />
+          </View>
+
+          {/* Quick Actions */}
+          <View style={styles.section}>
+            <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+              Aksi Cepat
+            </Text>
+            <View style={styles.quickActions}>
+              {quickActions.map((action, index) => (
+                <QuickActionButton
+                  key={index}
+                  icon={action.icon}
+                  label={action.label}
+                  onPress={action.onPress}
+                  color={action.color}
+                />
               ))}
             </View>
-          ) : (
-            <EmptyState
-              icon="receipt-text-outline"
-              title="Belum Ada Transaksi"
-              description="Transaksi Anda akan muncul di sini"
-              actionLabel="Mulai Top Up"
-              onAction={() => (navigation as any).navigate('TopUp', {})}
-            />
+          </View>
+
+          {/* Promotional Banner Carousel */}
+          {banners.length > 0 && (
+            <View style={styles.section}>
+              <BannerCarousel banners={banners} onBannerPress={handleBannerPress} />
+            </View>
           )}
-        </View>
-      </ScrollView>
+
+          {/* Recent Transactions */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+                Transaksi Terakhir
+              </Text>
+              {recentTransactions.length > 0 && (
+                <Text
+                  variant="bodyMedium"
+                  style={[styles.seeAll, { color: theme.colors.primary }]}
+                  onPress={() => navigation.navigate('Savings')}
+                >
+                  Lihat Semua
+                </Text>
+              )}
+            </View>
+
+            {recentTransactions.length > 0 ? (
+              <View style={[styles.transactionList, { backgroundColor: theme.colors.surface }]}>
+                {recentTransactions.map((transaction, index) => (
+                  <React.Fragment key={transaction.id}>
+                    <TransactionItem transaction={transaction} />
+                    {index < recentTransactions.length - 1 && <Divider />}
+                  </React.Fragment>
+                ))}
+              </View>
+            ) : (
+              <EmptyState
+                icon="receipt-text-outline"
+                title="Belum Ada Transaksi"
+                description="Transaksi Anda akan muncul di sini"
+                actionLabel="Mulai Top Up"
+                onAction={() => (navigation as any).navigate('TopUp', {})}
+              />
+            )}
+          </View>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };

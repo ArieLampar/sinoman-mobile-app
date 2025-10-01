@@ -4,6 +4,7 @@ import { Balance, Transaction } from './savings.types';
 export interface DashboardState {
   balance: Balance | null;
   recentTransactions: Transaction[];
+  banners: PromotionalBanner[];
   stats: DashboardStats | null;
   isLoading: boolean;
   error: string | null;
@@ -12,10 +13,12 @@ export interface DashboardState {
   // Actions
   fetchDashboardData: () => Promise<void>;
   refreshDashboard: () => Promise<void>;
+  fetchBanners: () => Promise<void>;
 
   // State Setters
   setBalance: (balance: Balance) => void;
   setRecentTransactions: (transactions: Transaction[]) => void;
+  setBanners: (banners: PromotionalBanner[]) => void;
   setStats: (stats: DashboardStats) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;

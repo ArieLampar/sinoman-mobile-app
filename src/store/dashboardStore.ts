@@ -1,12 +1,14 @@
 import { create } from 'zustand';
 import { DashboardState, DashboardStats, Balance, Transaction } from '@types';
 import { fetchBalance, fetchTransactions } from '@services/savings';
+import { fetchBanners } from '@services/dashboard';
 import { logger } from '@utils/logger';
 
 export const useDashboardStore = create<DashboardState>((set, get) => ({
   // Initial State
   balance: null,
   recentTransactions: [],
+  banners: [],
   stats: null,
   isLoading: false,
   error: null,
@@ -17,10 +19,11 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      // Fetch balance and recent transactions in parallel
-      const [balance, transactionsResult] = await Promise.all([
+      // Fetch balance, transactions, and banners in parallel
+      const [balance, transactionsResult, banners] = await Promise.all([
         fetchBalance(),
         fetchTransactions(1, 5), // Get only 5 recent transactions
+        fetchBanners(),
       ]);
 
       // Calculate stats
@@ -54,6 +57,7 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
       set({
         balance,
         recentTransactions: transactionsResult.data,
+        banners,
         stats,
         isLoading: false,
         lastRefresh: new Date(),
@@ -70,9 +74,20 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     await get().fetchDashboardData();
   },
 
+  fetchBanners: async () => {
+    try {
+      const banners = await fetchBanners();
+      set({ banners });
+      logger.info('Banners fetched successfully');
+    } catch (error: any) {
+      logger.error('Fetch banners error:', error);
+    }
+  },
+
   // State Setters
   setBalance: (balance: Balance) => set({ balance }),
   setRecentTransactions: (recentTransactions: Transaction[]) => set({ recentTransactions }),
+  setBanners: (banners) => set({ banners }),
   setStats: (stats: DashboardStats) => set({ stats }),
   setLoading: (isLoading: boolean) => set({ isLoading }),
   setError: (error: string | null) => set({ error }),

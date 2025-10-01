@@ -18,10 +18,13 @@ export const BalanceCard: React.FC<BalanceCardProps> = ({ balance, isLoading, on
   const totalBalance = balance?.total || 0;
 
   return (
-    <Card style={styles.card} elevation={4}>
+    <Card style={styles.card} elevation={2}>
       <Pressable onPress={onPress} disabled={!onPress}>
         <LinearGradient
-          colors={[theme.colors.primary, theme.colors.primaryContainer]}
+          colors={[
+            'rgba(5, 150, 105, 0.85)',  // Primary green with 85% opacity
+            'rgba(16, 185, 129, 0.75)',  // Primary light with 75% opacity
+          ]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.gradient}
@@ -99,9 +102,12 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 16,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   gradient: {
     padding: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
   content: {
     gap: 16,
