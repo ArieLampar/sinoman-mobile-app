@@ -1,5 +1,12 @@
 import { supabase } from '@services/supabase';
 import { logger } from '@utils/logger';
+import { withRetry } from '@utils/retryHelper';
+import {
+  logEvent,
+  startTrace,
+  stopTrace,
+  AnalyticsEvents,
+} from '@services/monitoring';
 import {
   Balance,
   Transaction,
@@ -146,26 +153,41 @@ export async function fetchTransactions(
  * @returns Top up response
  */
 export async function topUp(request: TopUpRequest): Promise<TopUpResponse> {
+  const trace = await startTrace('top_up_transaction');
+  const startTime = Date.now();
+
   try {
     logger.info('Processing top up:', request);
 
-    const { data, error } = await supabase
-      .from('transactions')
-      .insert({
-        type: 'deposit',
-        savings_type: request.savingsType,
-        amount: request.amount,
-        payment_method: request.paymentMethod,
-        status: 'pending',
-        description: `Top up ${request.savingsType}`,
-      })
-      .select()
-      .single();
+    // Log initiated event
+    await logEvent(AnalyticsEvents.TOP_UP_INITIATED, {
+      savings_type: request.savingsType,
+      amount: request.amount,
+      payment_method: request.paymentMethod,
+    });
 
-    if (error) {
-      logger.error('Top up error:', error.message);
-      throw new Error(error.message);
-    }
+    // Wrap Supabase insert with retry logic
+    const data = await withRetry(async () => {
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert({
+          type: 'deposit',
+          savings_type: request.savingsType,
+          amount: request.amount,
+          payment_method: request.paymentMethod,
+          status: 'pending',
+          description: `Top up ${request.savingsType}`,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        logger.error('Top up error:', error.message);
+        throw new Error(error.message);
+      }
+
+      return data;
+    });
 
     // Fetch updated balance
     const balance = await fetchBalance();
@@ -178,9 +200,57 @@ export async function topUp(request: TopUpRequest): Promise<TopUpResponse> {
     };
 
     logger.info('Top up successful:', response.transactionId);
+
+    // Log success event
+    await logEvent(AnalyticsEvents.TOP_UP_SUCCESS, {
+      transaction_id: response.transactionId,
+      savings_type: request.savingsType,
+      amount: request.amount,
+      payment_method: request.paymentMethod,
+    });
+
+    // Stop trace with success metrics
+    const duration = Date.now() - startTime;
+    await stopTrace(
+      trace,
+      {
+        duration_ms: duration,
+        amount: request.amount,
+      },
+      {
+        savings_type: request.savingsType,
+        payment_method: request.paymentMethod,
+        status: 'success',
+      }
+    );
+
     return response;
   } catch (error: any) {
     logger.error('Top up exception:', error);
+
+    // Log failure event
+    await logEvent(AnalyticsEvents.TOP_UP_FAILED, {
+      savings_type: request.savingsType,
+      amount: request.amount,
+      payment_method: request.paymentMethod,
+      error_message: error.message,
+    });
+
+    // Stop trace with failure metrics
+    const duration = Date.now() - startTime;
+    await stopTrace(
+      trace,
+      {
+        duration_ms: duration,
+      },
+      {
+        savings_type: request.savingsType,
+        payment_method: request.paymentMethod,
+        status: 'failed',
+        error: error.message,
+      }
+    );
+
     throw error;
   }
 }

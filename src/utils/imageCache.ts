@@ -1,4 +1,5 @@
 import { Image, ImageContentFit, ImageCachePolicy, ImagePriority } from 'expo-image';
+import { logger } from '@utils/logger';
 
 /**
  * Image preset configurations for consistent caching behavior
@@ -61,7 +62,7 @@ export async function clearImageCache(): Promise<void> {
     await Image.clearMemoryCache();
     await Image.clearDiskCache();
   } catch (error) {
-    console.error('Failed to clear image cache:', error);
+    logger.error('Failed to clear image cache:', error);
     throw error;
   }
 }
@@ -77,7 +78,7 @@ export async function preloadImages(imageUris: string[]): Promise<void> {
     );
     await Promise.all(promises);
   } catch (error) {
-    console.error('Failed to preload images:', error);
+    logger.error('Failed to preload images:', error);
   }
 }
 

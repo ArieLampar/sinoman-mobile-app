@@ -16,3 +16,5 @@ export type { TransactionItemProps } from './TransactionItem';
 export { OfflineIndicator } from './OfflineIndicator';
 
 export { SecurityWarningModal } from './SecurityWarningModal';
+
+export { ErrorBoundary } from './ErrorBoundary';

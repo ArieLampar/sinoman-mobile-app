@@ -1,4 +1,5 @@
 import { supabase } from '../supabase';
+import { logger } from '@utils/logger';
 import type { RegistrationRequest, RegistrationResponse, User } from '../../types/auth.types';
 
 /**
@@ -19,7 +20,7 @@ export async function completeRegistration(data: RegistrationRequest): Promise<R
     });
 
     if (error) {
-      console.error('Registration error:', error);
+      logger.error('Registration error:', error);
       return {
         success: false,
         error: error.message,
@@ -50,7 +51,7 @@ export async function completeRegistration(data: RegistrationRequest): Promise<R
       user,
     };
   } catch (error: any) {
-    console.error('Registration exception:', error);
+    logger.error('Registration exception:', error);
     return {
       success: false,
       error: error.message || 'An unexpected error occurred',
@@ -71,7 +72,7 @@ export async function checkProfileComplete(): Promise<boolean> {
 
     return user.user_metadata?.is_profile_complete === true;
   } catch (error) {
-    console.error('Error checking profile completion:', error);
+    logger.error('Error checking profile completion:', error);
     return false;
   }
 }

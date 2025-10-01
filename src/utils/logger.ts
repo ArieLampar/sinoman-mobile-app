@@ -4,12 +4,15 @@
  */
 
 import { sanitizeString, sanitizeObject, sanitizeError } from '@services/security/dataSanitizer';
+import { captureError, addBreadcrumb } from '@services/monitoring';
+import { ErrorSeverity } from '@types';
 
 interface Logger {
   debug: (message: string, ...args: any[]) => void;
   info: (message: string, ...args: any[]) => void;
   warn: (message: string, ...args: any[]) => void;
   error: (message: string, ...args: any[]) => void;
+  breadcrumb: (message: string, category: string, data?: Record<string, any>) => void;
 }
 
 /**
@@ -99,6 +102,23 @@ export const logger: Logger = {
       ...sanitizedArgs
     );
 
-    // TODO: Send to Sentry in production
+    // Send to Sentry in production
+    if (!__DEV__) {
+      const errorObj = args.find(arg => arg instanceof Error);
+      if (errorObj) {
+        captureError(errorObj, {
+          screen: 'unknown',
+          action: message,
+          timestamp: new Date().toISOString(),
+        }, ErrorSeverity.ERROR);
+      }
+    }
+  },
+
+  breadcrumb: (message: string, category: string, data?: Record<string, any>): void => {
+    addBreadcrumb(message, category, data);
+    if (__DEV__) {
+      logger.debug(`[BREADCRUMB] [${category}] ${message}`, data);
+    }
   },
 };

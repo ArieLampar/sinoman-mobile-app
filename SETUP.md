@@ -82,7 +82,88 @@ EXPO_PUBLIC_ENV=development
 
 ---
 
-### Step 3: Create Placeholder Assets
+### Step 3: Configure Firebase
+
+Firebase is used for Analytics, Performance Monitoring, and Crashlytics to monitor app health and user behavior.
+
+#### Copy Template Files
+
+```bash
+# Copy template files to actual config files
+cp google-services.json.example google-services.json
+cp GoogleService-Info.plist.example GoogleService-Info.plist
+```
+
+#### Download Configuration Files from Firebase Console
+
+1. **Navigate to Firebase Console**
+   - Go to [https://console.firebase.google.com](https://console.firebase.google.com)
+   - Select your project or create a new one
+
+2. **For Android App:**
+   - Click Project Settings (gear icon)
+   - Scroll to "Your apps" section
+   - Select Android app or add new Android app
+   - Package name: `id.sinomanapp.mobile`
+   - Download `google-services.json`
+   - Place file in project root directory
+
+3. **For iOS App:**
+   - In same Project Settings page
+   - Select iOS app or add new iOS app
+   - Bundle ID: `id.sinomanapp.mobile`
+   - Download `GoogleService-Info.plist`
+   - Place file in project root directory
+
+4. **Enable Firebase Services:**
+   - Go to Firebase Console > Analytics
+   - Click "Enable Google Analytics"
+   - Go to Firebase Console > Performance
+   - Click "Get started" to enable Performance Monitoring
+
+#### Security Configuration
+
+**⚠️ Important**: Firebase config files contain API keys but are **gitignored** for security.
+
+1. **Verify files are in `.gitignore`:**
+   ```bash
+   cat .gitignore | grep google-services
+   # Should show: google-services.json
+   # Should show: GoogleService-Info.plist
+   ```
+
+2. **Restrict API Keys in Google Cloud Console:**
+   - Go to [Google Cloud Console](https://console.cloud.google.com)
+   - Select your Firebase project
+   - Navigate to APIs & Services > Credentials
+   - **For Android API Key:**
+     - Click on the Android API key
+     - Under "Application restrictions", select "Android apps"
+     - Add your app's package name: `id.sinomanapp.mobile`
+     - Add your app's SHA-1 fingerprint
+   - **For iOS API Key:**
+     - Click on the iOS API key
+     - Under "Application restrictions", select "iOS apps"
+     - Add your app's bundle ID: `id.sinomanapp.mobile`
+
+3. **Configure Firebase Security Rules:**
+   - See [docs/FIREBASE_SECURITY.md](docs/FIREBASE_SECURITY.md) for detailed instructions
+   - Configure Firestore/Realtime Database security rules
+   - Enable Firebase App Check for additional protection
+
+#### Troubleshooting
+
+- **If files are missing**: App will still run but Firebase features won't work
+- **Check `app.json`**: Verify file paths are correct (should be in project root)
+- **Package name must match**: Ensure `id.sinomanapp.mobile` is consistent in Firebase Console and `app.json`
+- **Rebuild required**: After adding config files, rebuild the app:
+  ```bash
+  npx expo prebuild --clean
+  ```
+
+---
+
+### Step 4: Create Placeholder Assets
 
 The app expects these asset files (will be replaced by actual assets later):
 
@@ -102,7 +183,7 @@ The app expects these asset files (will be replaced by actual assets later):
 
 ---
 
-### Step 4: Verify Setup
+### Step 5: Verify Setup
 
 Run TypeScript type checking:
 ```bash
@@ -118,7 +199,7 @@ npm run lint
 
 ---
 
-### Step 5: Start Development Server
+### Step 6: Start Development Server
 
 ```bash
 npm start
@@ -137,7 +218,7 @@ This will:
 
 ---
 
-### Step 6: Test on Device
+### Step 7: Test on Device
 
 #### Option A: Expo Go (Recommended for Development)
 
@@ -277,6 +358,8 @@ Phase 1 is complete when:
 - ✅ All 5 tab screens render with "Coming Soon" badges
 - ✅ No critical errors in console
 - ✅ Supabase client initializes without errors
+- ✅ Firebase configuration files created and placed in root
+- ✅ Firebase initializes without errors in console
 
 ---
 

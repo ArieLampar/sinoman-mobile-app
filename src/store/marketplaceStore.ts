@@ -8,7 +8,13 @@ import { MMKV } from 'react-native-mmkv';
 import * as marketplaceService from '@services/marketplace';
 import { logger } from '@utils/logger';
 import { SECURITY } from '@utils/constants';
-import { getSecureItem, setSecureItem, generateEncryptionKey } from '@services/security';
+import {
+  getSecureItem,
+  setSecureItem,
+  generateEncryptionKey,
+  encryptJSON,
+  decryptJSON
+} from '@services/security';
 import type {
   Product,
   Category,
@@ -21,6 +27,7 @@ import type {
 
 // MMKV storage for cart persistence (initialized lazily with dynamic key)
 let storage: MMKV | null = null;
+let aesEncryptionKey: string | null = null;
 
 /**
  * Get or create encryption key for cart storage
@@ -39,6 +46,31 @@ async function getOrCreateCartEncryptionKey(): Promise<string> {
     return key;
   } catch (error: any) {
     logger.error('Get cart encryption key error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get or create AES-256-GCM encryption key for cart data encryption
+ * @returns AES encryption key from secure storage
+ */
+async function getOrCreateCartAESKey(): Promise<string> {
+  if (aesEncryptionKey) return aesEncryptionKey;
+
+  try {
+    let key = await getSecureItem(SECURITY.SECURE_KEYS.AES_CART_KEY);
+
+    if (!key) {
+      // Generate new 256-bit AES encryption key
+      key = await generateEncryptionKey();
+      await setSecureItem(SECURITY.SECURE_KEYS.AES_CART_KEY, key);
+      logger.info('AES-256-GCM cart encryption key generated');
+    }
+
+    aesEncryptionKey = key;
+    return key;
+  } catch (error: any) {
+    logger.error('Get cart AES encryption key error:', error);
     throw error;
   }
 }
@@ -84,16 +116,19 @@ function calculateCart(items: CartItem[]): Cart {
 }
 
 /**
- * Load cart from MMKV storage
+ * Load cart from MMKV storage with AES-256-GCM decryption
  */
 async function loadCartFromStorage(): Promise<CartItem[]> {
   try {
     const store = await getCartStorage();
-    const cartJson = store.getString('@sinoman:cart');
-    if (!cartJson) return [];
+    const encryptedData = store.getString('@sinoman:cart');
+    if (!encryptedData) return [];
 
-    const items = JSON.parse(cartJson) as CartItem[];
-    logger.info('Cart loaded from storage', { itemCount: items.length });
+    // Decrypt data using AES-256-GCM
+    const aesKey = await getOrCreateCartAESKey();
+    const items = decryptJSON<CartItem[]>(encryptedData, aesKey);
+
+    logger.info('Cart loaded and decrypted from storage', { itemCount: items.length });
     return items;
   } catch (error) {
     logger.error('Failed to load cart from storage', error);
@@ -102,13 +137,18 @@ async function loadCartFromStorage(): Promise<CartItem[]> {
 }
 
 /**
- * Save cart to MMKV storage
+ * Save cart to MMKV storage with AES-256-GCM encryption
  */
 async function saveCartToStorage(items: CartItem[]): Promise<void> {
   try {
     const store = await getCartStorage();
-    store.set('@sinoman:cart', JSON.stringify(items));
-    logger.info('Cart saved to storage', { itemCount: items.length });
+
+    // Encrypt data using AES-256-GCM
+    const aesKey = await getOrCreateCartAESKey();
+    const encryptedData = encryptJSON(items, aesKey);
+
+    store.set('@sinoman:cart', encryptedData);
+    logger.info('Cart encrypted and saved to storage', { itemCount: items.length });
   } catch (error) {
     logger.error('Failed to save cart to storage', error);
   }

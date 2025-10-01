@@ -5,6 +5,7 @@
  */
 
 import { create } from 'zustand';
+import { logger } from '@utils/logger';
 import {
   FitChallengeState,
   FitChallenge,
@@ -55,7 +56,7 @@ export const useFitChallengeStore = create<FitChallengeState>((set, get) => ({
       const challenge = await fetchCurrentChallengeService();
       set({ currentChallenge: challenge, isLoadingChallenge: false });
     } catch (error) {
-      console.error('Error fetching current challenge:', error);
+      logger.error('Error fetching current challenge:', error);
       set({
         error: 'Gagal memuat data challenge',
         isLoadingChallenge: false,
@@ -79,7 +80,7 @@ export const useFitChallengeStore = create<FitChallengeState>((set, get) => ({
       const progress = await fetchMyProgressService(currentChallenge.id);
       set({ myProgress: progress, isLoadingProgress: false });
     } catch (error) {
-      console.error('Error fetching my progress:', error);
+      logger.error('Error fetching my progress:', error);
       set({
         error: 'Gagal memuat data progress',
         isLoadingProgress: false,
@@ -103,7 +104,7 @@ export const useFitChallengeStore = create<FitChallengeState>((set, get) => ({
       const leaderboard = await fetchLeaderboardService(currentChallenge.id, 10);
       set({ leaderboard, isLoadingLeaderboard: false });
     } catch (error) {
-      console.error('Error fetching leaderboard:', error);
+      logger.error('Error fetching leaderboard:', error);
       set({
         error: 'Gagal memuat data leaderboard',
         isLoadingLeaderboard: false,
@@ -135,7 +136,7 @@ export const useFitChallengeStore = create<FitChallengeState>((set, get) => ({
       set({ isCheckingIn: false });
       return response;
     } catch (error) {
-      console.error('Error checking in:', error);
+      logger.error('Error checking in:', error);
       set({
         error: 'Terjadi kesalahan saat check-in',
         isCheckingIn: false,
@@ -169,7 +170,7 @@ export const useFitChallengeStore = create<FitChallengeState>((set, get) => ({
       set({ isJoining: false });
       return response;
     } catch (error) {
-      console.error('Error joining challenge:', error);
+      logger.error('Error joining challenge:', error);
       set({
         error: 'Terjadi kesalahan saat bergabung',
         isJoining: false,
@@ -199,7 +200,7 @@ export const useFitChallengeStore = create<FitChallengeState>((set, get) => ({
         fetchLeaderboard(),
       ]);
     } catch (error) {
-      console.error('Error refreshing data:', error);
+      logger.error('Error refreshing data:', error);
       set({ error: 'Gagal memuat data' });
     }
   },

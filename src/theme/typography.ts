@@ -1,4 +1,5 @@
 import * as Font from 'expo-font';
+import { logger } from '@utils/logger';
 
 export const fontFamilies = {
   regular: 'Inter-Regular',
@@ -76,7 +77,7 @@ export async function loadFonts() {
     });
     return true;
   } catch (error) {
-    console.warn('Failed to load Inter fonts, using system fonts');
+    logger.warn('Failed to load Inter fonts, using system fonts');
     return false;
   }
 }

@@ -31,5 +31,8 @@ export * from './notification.types';
 // Security types
 export * from './security.types';
 
+// Monitoring types
+export * from './monitoring.types';
+
 // Additional types will be added in subsequent phases:
 // export * from './common.types';

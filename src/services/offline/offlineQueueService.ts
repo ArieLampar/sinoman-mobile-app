@@ -8,10 +8,17 @@ import { QueuedTransaction, QRPaymentRequest, SyncResult } from '@types';
 import { processQRPayment } from '@services/qr';
 import { logger } from '@utils/logger';
 import { STORAGE_KEYS, SECURITY } from '@utils/constants';
-import { getSecureItem, setSecureItem, generateEncryptionKey } from '@services/security';
+import {
+  getSecureItem,
+  setSecureItem,
+  generateEncryptionKey,
+  encryptJSON,
+  decryptJSON
+} from '@services/security';
 
 // Storage instance (will be initialized lazily with dynamic key)
 let storage: MMKV | null = null;
+let aesEncryptionKey: string | null = null;
 
 /**
  * Get or create encryption key for MMKV storage
@@ -36,6 +43,31 @@ async function getOrCreateEncryptionKey(): Promise<string> {
 }
 
 /**
+ * Get or create AES-256-GCM encryption key for data encryption
+ * @returns AES encryption key from secure storage
+ */
+async function getOrCreateAESKey(): Promise<string> {
+  if (aesEncryptionKey) return aesEncryptionKey;
+
+  try {
+    let key = await getSecureItem(SECURITY.SECURE_KEYS.AES_DATA_KEY);
+
+    if (!key) {
+      // Generate new 256-bit AES encryption key
+      key = await generateEncryptionKey();
+      await setSecureItem(SECURITY.SECURE_KEYS.AES_DATA_KEY, key);
+      logger.info('AES-256-GCM offline queue encryption key generated');
+    }
+
+    aesEncryptionKey = key;
+    return key;
+  } catch (error: any) {
+    logger.error('Get AES encryption key error:', error);
+    throw error;
+  }
+}
+
+/**
  * Get initialized MMKV storage instance
  * @returns MMKV storage instance with encryption
  */
@@ -52,17 +84,20 @@ async function getStorage(): Promise<MMKV> {
 }
 
 /**
- * Get all queued transactions from storage
+ * Get all queued transactions from storage with AES-256-GCM decryption
  * @returns QueuedTransaction[] - Array of queued transactions
  */
 export async function getQueue(): Promise<QueuedTransaction[]> {
   try {
     const store = await getStorage();
-    const queueJson = store.getString(STORAGE_KEYS.OFFLINE_QUEUE);
-    if (!queueJson) return [];
+    const encryptedData = store.getString(STORAGE_KEYS.OFFLINE_QUEUE);
+    if (!encryptedData) return [];
 
-    const queue = JSON.parse(queueJson) as QueuedTransaction[];
-    logger.info('Offline queue loaded:', queue.length);
+    // Decrypt data using AES-256-GCM
+    const aesKey = await getOrCreateAESKey();
+    const queue = decryptJSON<QueuedTransaction[]>(encryptedData, aesKey);
+
+    logger.info('Offline queue loaded and decrypted:', queue.length);
     return queue;
   } catch (error) {
     logger.error('Get queue error:', error);
@@ -71,14 +106,19 @@ export async function getQueue(): Promise<QueuedTransaction[]> {
 }
 
 /**
- * Save queue to storage
+ * Save queue to storage with AES-256-GCM encryption
  * @param queue - Array of queued transactions to save
  */
 async function saveQueue(queue: QueuedTransaction[]): Promise<void> {
   try {
     const store = await getStorage();
-    store.set(STORAGE_KEYS.OFFLINE_QUEUE, JSON.stringify(queue));
-    logger.info('Offline queue saved:', queue.length);
+
+    // Encrypt data using AES-256-GCM
+    const aesKey = await getOrCreateAESKey();
+    const encryptedData = encryptJSON(queue, aesKey);
+
+    store.set(STORAGE_KEYS.OFFLINE_QUEUE, encryptedData);
+    logger.info('Offline queue encrypted and saved:', queue.length);
   } catch (error) {
     logger.error('Save queue error:', error);
   }

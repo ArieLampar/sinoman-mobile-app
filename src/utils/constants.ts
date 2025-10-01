@@ -60,10 +60,46 @@ export const SECURITY = {
     HMAC_SECRET: 'sinoman_secure_hmac_secret',
     MMKV_OFFLINE_KEY: 'sinoman_mmkv_offline_queue_key',
     MMKV_CART_KEY: 'sinoman_mmkv_cart_key',
+    AES_DATA_KEY: 'sinoman_aes_data_encryption_key',
+    AES_CART_KEY: 'sinoman_aes_cart_encryption_key',
   } as const,
 
   // Device security policy
   BLOCK_ON_JAILBREAK: false, // Set true to block jailbroken devices
   BLOCK_ON_ROOT: false, // Set true to block rooted devices
   WARN_ON_COMPROMISED: true, // Show warning modal
+
+  // SSL Certificate Pinning
+  // Public key hashes for Supabase API (SHA-256)
+  // NOTE: Replace these with actual public key hashes from your Supabase project
+  // To get the hashes, use: openssl s_client -servername <domain> -connect <domain>:443 | openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64
+  SSL_PINNING_ENABLED: !__DEV__, // Disable in development for easier testing
+  SSL_PUBLIC_KEY_HASHES: [
+    // Supabase primary certificate (example - MUST BE REPLACED)
+    'sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=',
+    // Supabase backup certificate (example - MUST BE REPLACED)
+    'sha256/BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=',
+    // Let's Encrypt root CA (common backup)
+    'sha256/Y9mvm0exBk1JoQ57f9Vm28jKo5lFm/woKcVxrYxu80o=',
+  ] as const,
+} as const;
+
+// Monitoring Configuration
+export const MONITORING = {
+  // Sentry configuration
+  SENTRY_ENABLED: !__DEV__,
+  SENTRY_TRACES_SAMPLE_RATE: __DEV__ ? 1.0 : 0.1,
+
+  // Retry configuration
+  MAX_RETRY_ATTEMPTS: 3,
+  RETRY_DELAY_MS: 1000,
+  RETRY_BACKOFF_MULTIPLIER: 2,
+
+  // Firebase configuration
+  FIREBASE_ANALYTICS_ENABLED: true,
+  FIREBASE_PERFORMANCE_ENABLED: true,
+
+  // Error reporting
+  ERROR_REPORT_ENABLED: !__DEV__,
+  BREADCRUMB_MAX_SIZE: 50,
 } as const;

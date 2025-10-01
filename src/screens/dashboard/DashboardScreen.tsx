@@ -8,6 +8,7 @@ import { useAuthStore } from '@store/authStore';
 import { useNetworkStatus } from '@hooks/useNetworkStatus';
 import { useQRStore } from '@store/qrStore';
 import { useNotificationStore } from '@store/notificationStore';
+import { useAnalytics } from '@hooks';
 import { BalanceCard } from '@components/dashboard/BalanceCard';
 import { QuickActionButton } from '@components/dashboard/QuickActionButton';
 import { BannerCarousel } from '@components/dashboard/BannerCarousel';
@@ -16,6 +17,7 @@ import { TransactionItem } from '@components/common/TransactionItem';
 import { EmptyState } from '@components/common/EmptyState';
 import { OfflineIndicator } from '@components/common/OfflineIndicator';
 import { logger } from '@utils/logger';
+import { logEvent, AnalyticsEvents } from '@services/monitoring';
 
 export const DashboardScreen: React.FC<MainTabScreenProps<'Dashboard'>> = ({ navigation }) => {
   const theme = useTheme();
@@ -31,6 +33,9 @@ export const DashboardScreen: React.FC<MainTabScreenProps<'Dashboard'>> = ({ nav
     isLoading,
     refreshDashboard,
   } = useDashboard();
+
+  // Track screen view
+  useAnalytics('Dashboard');
 
   const handleRefresh = async () => {
     await refreshDashboard();
@@ -72,23 +77,35 @@ export const DashboardScreen: React.FC<MainTabScreenProps<'Dashboard'>> = ({ nav
     {
       icon: 'wallet-plus',
       label: 'Top Up',
-      onPress: () => (navigation as any).navigate('TopUp', {}),
+      onPress: () => {
+        logEvent('quick_action_tap', { action: 'top_up' });
+        (navigation as any).navigate('TopUp', {});
+      },
       color: theme.colors.primary,
     },
     {
       icon: 'history',
       label: 'Riwayat',
-      onPress: () => navigation.navigate('Savings'),
+      onPress: () => {
+        logEvent('quick_action_tap', { action: 'transaction_history' });
+        navigation.navigate('Savings');
+      },
     },
     {
       icon: 'qrcode-scan',
       label: 'Scan QR',
-      onPress: () => navigation.navigate('QRScanner'),
+      onPress: () => {
+        logEvent('quick_action_tap', { action: 'qr_scan' });
+        navigation.navigate('QRScanner');
+      },
     },
     {
       icon: 'shopping',
       label: 'Belanja',
-      onPress: () => navigation.navigate('Marketplace'),
+      onPress: () => {
+        logEvent('quick_action_tap', { action: 'marketplace' });
+        navigation.navigate('Marketplace');
+      },
     },
   ];
 

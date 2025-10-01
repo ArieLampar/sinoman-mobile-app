@@ -71,6 +71,28 @@ Choose ONE method and complete:
 
 - [ ] Verified `.env` file is in `.gitignore` (should not be committed)
 
+## Firebase Configuration
+
+- [ ] Copied `google-services.json.example` to `google-services.json`
+- [ ] Copied `GoogleService-Info.plist.example` to `GoogleService-Info.plist`
+- [ ] Created Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
+- [ ] Downloaded actual `google-services.json` from Firebase Console (Android app)
+- [ ] Downloaded actual `GoogleService-Info.plist` from Firebase Console (iOS app)
+- [ ] Replaced template files with actual Firebase configuration files
+- [ ] Verified files are in project root directory
+- [ ] Verified files are in `.gitignore` (should not be committed)
+- [ ] Enabled Analytics in Firebase Console
+- [ ] Enabled Performance Monitoring in Firebase Console
+
+### Firebase Security Configuration
+
+- [ ] Restricted Android API key to app package name in Google Cloud Console
+- [ ] Restricted iOS API key to app bundle ID in Google Cloud Console
+- [ ] Added app's SHA-1 fingerprint for Android (if using authentication)
+- [ ] Configured Firebase security rules (if using Firestore/Realtime Database)
+- [ ] Enabled Firebase App Check (optional but recommended)
+- [ ] Reviewed [docs/FIREBASE_SECURITY.md](docs/FIREBASE_SECURITY.md) for best practices
+
 ## Supabase Setup (Backend)
 
 - [ ] Supabase project created
@@ -105,6 +127,7 @@ Choose ONE method and complete:
 - [ ] Splash screen displayed correctly
 - [ ] App icon shows up (may need to refresh)
 - [ ] Login screen is accessible
+- [ ] No Firebase configuration errors in console
 
 ## Optional: Platform-Specific Testing
 

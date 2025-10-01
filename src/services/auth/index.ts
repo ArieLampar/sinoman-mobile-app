@@ -23,7 +23,7 @@ export {
   hasBiometricHardware,
 } from './biometric';
 
-// Session Management
+// Session Management (Secure)
 export {
   saveSession,
   getStoredSession,
@@ -36,4 +36,5 @@ export {
   updateLastActivity,
   getLastActivity,
   shouldTerminateSession,
-} from './sessionManager';
+  hasActiveSession,
+} from './secureSessionManager';

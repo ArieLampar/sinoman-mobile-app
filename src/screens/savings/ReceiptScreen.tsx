@@ -1,4 +1,5 @@
 import React from 'react';
+import { logger } from '@utils/logger';
 import { View, StyleSheet, ScrollView, Share } from 'react-native';
 import { Text, Button, Divider, useTheme, Card } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -101,7 +102,7 @@ Saldo Setelah: ${formatCurrency(receipt.balanceAfter)}
         title: 'Struk Transaksi Sinoman',
       });
     } catch (error) {
-      console.error('Error sharing receipt:', error);
+      logger.error('Error sharing receipt:', error);
     }
   };
 

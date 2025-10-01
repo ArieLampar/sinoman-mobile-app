@@ -6,6 +6,7 @@ import { RootStackParamList } from '@types';
 import { AuthNavigator } from './AuthNavigator';
 import { MainNavigator } from './MainNavigator';
 import { useAuthStore } from '@store/authStore';
+import { ErrorBoundary } from '@components/common';
 
 // Lazy load non-critical screens for better performance
 const TopUpScreen = lazy(() => import('@screens/savings/TopUpScreen').then(m => ({ default: m.TopUpScreen })));
@@ -47,7 +48,14 @@ export const RootNavigator: React.FC = () => {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
           <>
-            <Stack.Screen name="Main" component={MainNavigator} />
+            <Stack.Screen
+              name="Main"
+              component={() => (
+                <ErrorBoundary context="Main">
+                  <MainNavigator />
+                </ErrorBoundary>
+              )}
+            />
             <Stack.Screen
               name="TopUp"
               component={TopUpScreen}
@@ -162,7 +170,14 @@ export const RootNavigator: React.FC = () => {
             />
           </>
         ) : (
-          <Stack.Screen name="Auth" component={AuthNavigator} />
+          <Stack.Screen
+            name="Auth"
+            component={() => (
+              <ErrorBoundary context="Auth">
+                <AuthNavigator />
+              </ErrorBoundary>
+            )}
+          />
         )}
       </Stack.Navigator>
     </Suspense>

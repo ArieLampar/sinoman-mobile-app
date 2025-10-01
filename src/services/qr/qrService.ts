@@ -4,6 +4,7 @@
  */
 
 import { supabase } from '@services/supabase';
+import { logger } from '@utils/logger';
 import {
   QRCodeData,
   QRCodeType,
@@ -68,7 +69,7 @@ export async function parseQRCode(qrDataString: string): Promise<QRScanResult> {
       merchant,
     };
   } catch (error: any) {
-    console.error('Error parsing QR code:', error);
+    logger.error('Error parsing QR code:', error);
     return {
       success: false,
       error: error.message || 'Terjadi kesalahan saat memproses QR code',
@@ -91,7 +92,7 @@ async function fetchMerchantInfo(merchantId: string): Promise<MerchantInfo | nul
 
     return data;
   } catch (error) {
-    console.error('Error fetching merchant:', error);
+    logger.error('Error fetching merchant:', error);
     return null;
   }
 }
@@ -161,7 +162,7 @@ export async function processQRPayment(request: QRPaymentRequest): Promise<QRPay
       .single();
 
     if (transactionError) {
-      console.error('Transaction error:', transactionError);
+      logger.error('Transaction error:', transactionError);
       return {
         success: false,
         error: 'Gagal membuat transaksi',
@@ -180,7 +181,7 @@ export async function processQRPayment(request: QRPaymentRequest): Promise<QRPay
       .eq('user_id', user.id);
 
     if (updateError) {
-      console.error('Balance update error:', updateError);
+      logger.error('Balance update error:', updateError);
       return {
         success: false,
         error: 'Gagal memperbarui saldo',
@@ -198,7 +199,7 @@ export async function processQRPayment(request: QRPaymentRequest): Promise<QRPay
       message: 'Pembayaran berhasil',
     };
   } catch (error: any) {
-    console.error('Payment processing error:', error);
+    logger.error('Payment processing error:', error);
     return {
       success: false,
       error: error.message || 'Terjadi kesalahan saat memproses pembayaran',
@@ -248,7 +249,7 @@ export async function generatePersonalQR(request: GenerateQRRequest): Promise<Ge
       expiresAt,
     };
   } catch (error: any) {
-    console.error('QR generation error:', error);
+    logger.error('QR generation error:', error);
     return {
       success: false,
       error: error.message || 'Terjadi kesalahan saat membuat QR code',
@@ -284,7 +285,7 @@ export async function fetchQRPaymentHistory(limit: number = 20, offset: number =
       hasMore: (count || 0) > offset + limit,
     };
   } catch (error: any) {
-    console.error('Error fetching QR payment history:', error);
+    logger.error('Error fetching QR payment history:', error);
     throw error;
   }
 }

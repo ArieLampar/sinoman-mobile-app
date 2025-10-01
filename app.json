@@ -42,6 +42,36 @@
     },
     "updates": {
       "fallbackToCacheTimeout": 0
+    },
+    "plugins": [
+      [
+        "@react-native-firebase/app",
+        {
+          "android": {
+            "googleServicesFile": "./google-services.json"
+          },
+          "ios": {
+            "googleServicesFile": "./GoogleService-Info.plist"
+          }
+        }
+      ],
+      "@react-native-firebase/perf",
+      "@react-native-firebase/analytics",
+      "sentry-expo"
+    ],
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "sinoman",
+            "project": "sinoman-mobile-app"
+          }
+        }
+      ]
+    },
+    "extra": {
+      "sentryDsn": "https://your-key@sentry.io/your-project-id"
     }
   }
 }

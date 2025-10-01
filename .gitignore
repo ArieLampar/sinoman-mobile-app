@@ -15,6 +15,11 @@ yarn-error.log*
 .env.local
 .env.*.local
 
+# Firebase / Google Services Configuration Files
+# These files contain API keys and should never be committed
+google-services.json
+GoogleService-Info.plist
+
 # IDE
 .vscode/
 .idea/

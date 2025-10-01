@@ -11,25 +11,49 @@ import { theme, loadFonts } from './src/theme';
 import { useInactivityTimer, useNotifications } from './src/hooks';
 import { useAuthStore } from './src/store/authStore';
 import { logger } from './src/utils/logger';
-import { SecurityWarningModal } from './src/components/common';
+import { SecurityWarningModal, ErrorBoundary } from './src/components/common';
 import {
   checkDeviceSecurity,
   shouldBlockApp,
   migrateFromAsyncStorage,
 } from './src/services/security';
 import { DeviceSecurityStatus } from './src/types';
+import {
+  initializeSentry,
+  initializeFirebase,
+  logEvent,
+  AnalyticsEvents,
+  setSentryUser,
+  clearSentryUser,
+  setUserProperties,
+} from './src/services/monitoring';
 
 // Prevent auto-hide of splash screen
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   // Initialize notifications when user is authenticated
   useNotifications();
 
   // Enable inactivity timer for auto-logout
   useInactivityTimer();
+
+  // Set user context in Sentry and Firebase Analytics when authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setSentryUser(user.id, {
+        phone: user.phone,
+        name: user.name,
+      });
+      setUserProperties({
+        userId: user.id,
+      });
+    } else {
+      clearSentryUser();
+    }
+  }, [isAuthenticated, user?.id]);
 
   return (
     <>
@@ -89,6 +113,16 @@ export default function App() {
           logger.warn('Data migration encountered issues');
         }
 
+        // Initialize monitoring services
+        logger.info('Initializing Sentry');
+        initializeSentry();
+
+        logger.info('Initializing Firebase Analytics & Performance');
+        await initializeFirebase();
+
+        // Log app open event
+        await logEvent(AnalyticsEvents.APP_OPEN);
+
         // Load custom fonts
         const fontsLoaded = await loadFonts();
         if (fontsLoaded) {
@@ -96,9 +130,6 @@ export default function App() {
         } else {
           logger.warn('Falling back to system fonts');
         }
-
-        // TODO: Initialize analytics
-        // await initAnalytics();
 
         logger.info('App initialization completed');
       } catch (error) {
@@ -118,24 +149,28 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <PaperProvider theme={theme}>
-          <NavigationContainer>
-            <AppContent />
-          </NavigationContainer>
+    <ErrorBoundary context="App">
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <PaperProvider theme={theme}>
+            <NavigationContainer>
+              <ErrorBoundary context="Navigation">
+                <AppContent />
+              </ErrorBoundary>
+            </NavigationContainer>
 
-          {/* Security Warning Modal */}
-          {securityStatus && (
-            <SecurityWarningModal
-              visible={showSecurityWarning}
-              securityStatus={securityStatus}
-              onContinue={() => setShowSecurityWarning(false)}
-              onExit={() => BackHandler.exitApp()}
-            />
-          )}
-        </PaperProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+            {/* Security Warning Modal */}
+            {securityStatus && (
+              <SecurityWarningModal
+                visible={showSecurityWarning}
+                securityStatus={securityStatus}
+                onContinue={() => setShowSecurityWarning(false)}
+                onExit={() => BackHandler.exitApp()}
+              />
+            )}
+          </PaperProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ErrorBoundary>
   );
 }

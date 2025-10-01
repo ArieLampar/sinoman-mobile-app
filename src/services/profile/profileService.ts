@@ -5,6 +5,7 @@
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@services/supabase';
+import { logger } from '@utils/logger';
 import {
   UserProfile,
   UpdateProfileRequest,
@@ -68,7 +69,7 @@ export async function fetchUserProfile(): Promise<UserProfile | null> {
 
     return data;
   } catch (error: any) {
-    console.error('Error fetching user profile:', error);
+    logger.error('Error fetching user profile:', error);
     throw error;
   }
 }
@@ -99,7 +100,7 @@ async function createUserProfile(userId: string, phoneNumber: string): Promise<U
 
     return data;
   } catch (error) {
-    console.error('Error creating user profile:', error);
+    logger.error('Error creating user profile:', error);
     return null;
   }
 }
@@ -125,7 +126,7 @@ export async function updateUserProfile(updates: UpdateProfileRequest): Promise<
 
     return true;
   } catch (error: any) {
-    console.error('Error updating profile:', error);
+    logger.error('Error updating profile:', error);
     throw error;
   }
 }
@@ -175,7 +176,7 @@ export async function updateProfilePhoto(request: UpdateProfilePhotoRequest): Pr
 
     return publicUrl;
   } catch (error: any) {
-    console.error('Error updating profile photo:', error);
+    logger.error('Error updating profile photo:', error);
     throw error;
   }
 }
@@ -194,7 +195,7 @@ export async function fetchAppSettings(): Promise<AppSettings> {
     // Merge with defaults to ensure all keys exist
     return { ...DEFAULT_SETTINGS, ...settings };
   } catch (error) {
-    console.error('Error fetching settings:', error);
+    logger.error('Error fetching settings:', error);
     return DEFAULT_SETTINGS;
   }
 }
@@ -211,7 +212,7 @@ export async function updateAppSettings(updates: Partial<AppSettings>): Promise<
 
     return true;
   } catch (error) {
-    console.error('Error updating settings:', error);
+    logger.error('Error updating settings:', error);
     return false;
   }
 }
@@ -223,7 +224,7 @@ export async function clearAppSettings(): Promise<void> {
   try {
     await AsyncStorage.removeItem(SETTINGS_STORAGE_KEY);
   } catch (error) {
-    console.error('Error clearing settings:', error);
+    logger.error('Error clearing settings:', error);
   }
 }
 
@@ -253,7 +254,7 @@ export async function updateNotificationPreferences(
 
     return true;
   } catch (error: any) {
-    console.error('Error updating notification preferences:', error);
+    logger.error('Error updating notification preferences:', error);
     throw error;
   }
 }
@@ -286,7 +287,7 @@ export async function deleteUserAccount(): Promise<boolean> {
 
     return true;
   } catch (error: any) {
-    console.error('Error deleting account:', error);
+    logger.error('Error deleting account:', error);
     throw error;
   }
 }

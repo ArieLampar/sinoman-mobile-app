@@ -10,6 +10,9 @@ export default (): ExpoConfig => {
       supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
       apiUrl: process.env.EXPO_PUBLIC_API_URL,
       environment: process.env.EXPO_PUBLIC_ENV || 'development',
+      sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+      sentryEnvironment: process.env.EXPO_PUBLIC_ENV || 'development',
+      sentryRelease: process.env.EXPO_PUBLIC_SENTRY_RELEASE || '1.0.0',
       eas: {
         projectId: process.env.EAS_PROJECT_ID,
       },

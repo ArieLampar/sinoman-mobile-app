@@ -50,7 +50,48 @@ cp .env.example .env
 # EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
-### 3. Generate Placeholder Assets
+### 3. Firebase Configuration
+
+Configure Firebase for Analytics, Performance Monitoring, and Crashlytics:
+
+```bash
+# Copy template files
+cp google-services.json.example google-services.json
+cp GoogleService-Info.plist.example GoogleService-Info.plist
+```
+
+**Get Firebase Configuration Files:**
+
+1. Go to [Firebase Console](https://console.firebase.google.com)
+2. Select your project or create a new one
+3. **For Android:**
+   - Navigate to Project Settings > Your apps > Android app
+   - Download `google-services.json`
+   - Place it in the project root directory
+4. **For iOS:**
+   - Navigate to Project Settings > Your apps > iOS app
+   - Download `GoogleService-Info.plist`
+   - Place it in the project root directory
+
+**⚠️ Important Security Notes:**
+
+- These files contain API keys and are automatically **gitignored**
+- **Never commit** `google-services.json` or `GoogleService-Info.plist` to the repository
+- Each developer must obtain their own copies from Firebase Console
+- Use template files (`.example` suffix) for reference only
+
+**Configure Firebase Security:**
+
+To secure your Firebase API keys:
+
+1. **Restrict API Keys** in Google Cloud Console:
+   - Android: Restrict to your app's SHA-1 fingerprint and package name
+   - iOS: Restrict to your app's bundle ID
+2. **Configure Firebase Security Rules** in Firebase Console
+3. **Enable Firebase App Check** for additional security
+4. See [docs/FIREBASE_SECURITY.md](docs/FIREBASE_SECURITY.md) for detailed instructions
+
+### 4. Generate Placeholder Assets
 
 The app requires icon and splash screen assets. Generate placeholder assets for development:
 
@@ -69,7 +110,7 @@ Or manually create the required files in `assets/` directory:
 
 See [assets/README.md](assets/README.md) for detailed instructions.
 
-### 4. Run Development Server
+### 5. Run Development Server
 
 ```bash
 # Start Expo dev server
@@ -85,7 +126,7 @@ npm run ios
 npm run web
 ```
 
-### 4. Scan QR Code
+### 6. Scan QR Code
 
 - Install Expo Go dari Play Store (Android) atau App Store (iOS)
 - Scan QR code dari terminal
@@ -357,6 +398,150 @@ eas build --platform ios --profile production
 3. Commit changes (`git commit -m 'feat: add amazing feature'`)
 4. Push to branch (`git push origin feature/amazing-feature`)
 5. Open Pull Request
+
+## 📊 Error Handling, Logging & Monitoring
+
+The app includes a comprehensive monitoring and error tracking system for production reliability and user experience insights.
+
+### Features
+
+- ✅ **Sentry crash reporting** - Automatic error tracking and crash reporting
+- ✅ **Firebase Analytics** - User behavior and engagement tracking
+- ✅ **Firebase Performance** - App performance metrics and traces
+- ✅ **Global ErrorBoundary** - Graceful error handling with recovery UI
+- ✅ **User-friendly error messages** - Indonesian error messages with recovery actions
+- ✅ **Retry mechanisms** - Exponential backoff for transient failures
+- ✅ **Breadcrumb tracking** - User action trails for debugging
+- ✅ **Automatic screen tracking** - All screen views logged to analytics
+- ✅ **Data sanitization** - Sensitive data removed before logging
+- ✅ **Development mode safety** - Errors logged locally in dev, sent to Sentry in production
+
+### Setup
+
+1. **Create Sentry Project**
+   - Visit [sentry.io](https://sentry.io) and create a new project
+   - Copy your DSN to `.env`:
+     ```bash
+     EXPO_PUBLIC_SENTRY_DSN=https://your-key@sentry.io/your-project-id
+     EXPO_PUBLIC_SENTRY_RELEASE=1.0.0
+     ```
+
+2. **Configure Firebase** (Already set up in step 3)
+   - Firebase Analytics and Performance are automatically enabled
+   - No additional configuration needed if Firebase is already configured
+
+3. **Rebuild the App**
+   ```bash
+   npx expo prebuild
+   npm run android  # or npm run ios
+   ```
+
+4. **Verify Installation**
+   - Check Sentry dashboard for events
+   - Check Firebase console for analytics events
+   - Trigger a test error to verify reporting
+
+### Usage
+
+**Track Screen Views (Automatic):**
+```typescript
+import { useAnalytics } from '@hooks';
+
+export const MyScreen = () => {
+  useAnalytics('MyScreen');  // Automatically tracks screen view
+  // ... rest of component
+};
+```
+
+**Log Custom Events:**
+```typescript
+import { logEvent } from '@services/monitoring';
+
+// Track user actions
+logEvent('button_clicked', { button_name: 'top_up' });
+logEvent('purchase_completed', { amount: 50000, product_id: '123' });
+```
+
+**Capture Errors:**
+```typescript
+import { captureError } from '@services/monitoring';
+import { ErrorSeverity } from '@types';
+
+try {
+  await riskyOperation();
+} catch (error) {
+  captureError(error, {
+    screen: 'CheckoutScreen',
+    action: 'process_payment',
+    timestamp: new Date().toISOString(),
+  }, ErrorSeverity.ERROR);
+}
+```
+
+**Add Breadcrumbs:**
+```typescript
+import { addBreadcrumb } from '@services/monitoring';
+
+addBreadcrumb('User tapped checkout button', 'user-action', {
+  cart_items: 3,
+  total_amount: 150000,
+});
+```
+
+**Retry Failed Operations:**
+```typescript
+import { withRetry } from '@utils/retryHelper';
+
+const result = await withRetry(
+  async () => await apiService.fetchData(),
+  { maxAttempts: 3, delayMs: 1000 }
+);
+```
+
+**Performance Traces:**
+```typescript
+import { startTrace, stopTrace } from '@services/monitoring';
+
+const trace = await startTrace('checkout_flow');
+// ... perform checkout operations
+await stopTrace(trace,
+  { duration: 1500, items_count: 3 },  // metrics
+  { status: 'success', payment_method: 'balance' }  // attributes
+);
+```
+
+### Documentation
+
+- 📖 **[Complete Monitoring Guide](./docs/MONITORING.md)** - Comprehensive guide with examples
+- 📖 **[Implementation Details](./docs/MONITORING_IMPLEMENTATION.md)** - Technical implementation details
+
+### Analytics Events
+
+Standard events tracked throughout the app:
+- `login_success`, `login_failed`, `logout`
+- `top_up_initiated`, `top_up_success`, `top_up_failed`
+- `qr_payment_success`, `qr_payment_failed`
+- `product_viewed`, `order_placed`, `order_completed`
+- `challenge_joined`, `challenge_completed`
+- `app_open`, `notification_received`
+
+See [firebaseService.ts](./src/services/monitoring/firebaseService.ts) for the complete list.
+
+### Error Recovery
+
+The app provides user-friendly error messages in Indonesian with recovery actions:
+
+| Error Type | Message | Recovery Actions |
+|------------|---------|------------------|
+| Network Error | "Koneksi internet bermasalah..." | Coba Lagi, Kembali |
+| Session Expired | "Sesi Anda telah berakhir..." | Login Ulang |
+| Insufficient Balance | "Saldo tidak mencukupi" | Top Up, Kembali |
+| QR Invalid | "QR code tidak valid..." | Pindai Ulang |
+
+### Monitoring Dashboards
+
+- **Sentry Dashboard**: [sentry.io](https://sentry.io) - Error tracking, crash reports, performance
+- **Firebase Console**: [console.firebase.google.com](https://console.firebase.google.com) - Analytics, performance traces, user engagement
 
 ## Performance
 

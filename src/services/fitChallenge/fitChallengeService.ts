@@ -5,6 +5,7 @@
  * Currently using mock data - Supabase migration path prepared with TODO comments
  */
 
+import { logger } from '@utils/logger';
 import {
   FitChallenge,
   FitChallengeProgress,
@@ -306,7 +307,7 @@ export async function fetchCurrentChallenge(): Promise<FitChallenge | null> {
     await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
     return MOCK_CHALLENGE;
   } catch (error) {
-    console.error('Error fetching current challenge:', error);
+    logger.error('Error fetching current challenge:', error);
     return null;
   }
 }
@@ -358,7 +359,7 @@ export async function fetchMyProgress(challengeId: string): Promise<FitChallenge
       lastCheckInDate,
     };
   } catch (error) {
-    console.error('Error fetching my progress:', error);
+    logger.error('Error fetching my progress:', error);
     return null;
   }
 }
@@ -396,7 +397,7 @@ export async function fetchLeaderboard(
       lastUpdated: new Date().toISOString(),
     };
   } catch (error) {
-    console.error('Error fetching leaderboard:', error);
+    logger.error('Error fetching leaderboard:', error);
     return null;
   }
 }
@@ -478,7 +479,7 @@ export async function checkIn(request: CheckInRequest): Promise<CheckInResponse>
       message: 'Check-in berhasil! +10 poin',
     };
   } catch (error) {
-    console.error('Error checking in:', error);
+    logger.error('Error checking in:', error);
     return {
       success: false,
       error: 'Check-in failed',
@@ -517,7 +518,7 @@ export async function joinChallenge(challengeId: string): Promise<JoinChallengeR
       message: 'Berhasil bergabung dengan challenge!',
     };
   } catch (error) {
-    console.error('Error joining challenge:', error);
+    logger.error('Error joining challenge:', error);
     return {
       success: false,
       error: 'Join failed',

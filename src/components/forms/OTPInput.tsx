@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { logger } from '@utils/logger';
 import { View, TextInput, StyleSheet, Pressable, Platform } from 'react-native';
 import { useTheme, Text } from 'react-native-paper';
 import { VALIDATION } from '@utils/constants';
@@ -48,17 +49,17 @@ export const OTPInput: React.FC<OTPInputProps> = ({
       // Get app signature hash (required for SMS Retriever API)
       RNOtpVerify.getHash()
         .then((hash) => {
-          console.log('SMS Hash:', hash);
+          logger.info('SMS Hash:', hash);
         })
         .catch((error) => {
-          console.log('Error getting SMS hash:', error);
+          logger.info('Error getting SMS hash:', error);
         });
 
       // Start listening for SMS
       RNOtpVerify.getOtp()
         .then(() => RNOtpVerify.addListener(otpHandler))
         .catch((error) => {
-          console.log('Error starting OTP listener:', error);
+          logger.info('Error starting OTP listener:', error);
         });
 
       return () => {
@@ -83,7 +84,7 @@ export const OTPInput: React.FC<OTPInputProps> = ({
         }
       }
     } catch (error) {
-      console.log('Error extracting OTP from SMS:', error);
+      logger.info('Error extracting OTP from SMS:', error);
     }
   };
 

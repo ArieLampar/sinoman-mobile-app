@@ -17,3 +17,9 @@ export * from './dataSanitizer';
 
 // API security
 export * from './apiSecurityService';
+
+// SSL Pinning
+export * from './sslPinningService';
+
+// Secure session manager
+export { migrateFromAsyncStorage } from '../auth/secureSessionManager';
