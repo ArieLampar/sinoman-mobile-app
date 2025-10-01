@@ -1,12 +1,13 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { Text, useTheme, Divider } from 'react-native-paper';
+import { Text, useTheme, Divider, IconButton, Badge } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MainTabScreenProps, PromotionalBanner } from '@types';
 import { useDashboard } from '@hooks/useDashboard';
 import { useAuthStore } from '@store/authStore';
 import { useNetworkStatus } from '@hooks/useNetworkStatus';
 import { useQRStore } from '@store/qrStore';
+import { useNotificationStore } from '@store/notificationStore';
 import { BalanceCard } from '@components/dashboard/BalanceCard';
 import { QuickActionButton } from '@components/dashboard/QuickActionButton';
 import { BannerCarousel } from '@components/dashboard/BannerCarousel';
@@ -21,6 +22,7 @@ export const DashboardScreen: React.FC<MainTabScreenProps<'Dashboard'>> = ({ nav
   const { user } = useAuthStore();
   const { isOffline } = useNetworkStatus();
   const { getQueuedTransactionsCount } = useQRStore();
+  const { unreadCount } = useNotificationStore();
   const {
     balance,
     recentTransactions,
@@ -114,6 +116,24 @@ export const DashboardScreen: React.FC<MainTabScreenProps<'Dashboard'>> = ({ nav
               <Text variant="headlineSmall" style={[styles.userName, { color: theme.colors.onSurface }]}>
                 {user?.name || 'Member Sinoman'}
               </Text>
+            </View>
+
+            {/* Notification Bell */}
+            <View style={styles.headerActions}>
+              <IconButton
+                icon="bell"
+                size={24}
+                onPress={() => navigation.navigate('Notifications')}
+                style={styles.notificationButton}
+              />
+              {unreadCount > 0 && (
+                <Badge
+                  size={18}
+                  style={styles.notificationBadge}
+                >
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Badge>
+              )}
             </View>
           </View>
 
@@ -217,6 +237,18 @@ const styles = StyleSheet.create({
   userName: {
     fontWeight: '700',
     marginTop: 4,
+  },
+  headerActions: {
+    position: 'relative',
+  },
+  notificationButton: {
+    margin: 0,
+  },
+  notificationBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: '#EF4444',
   },
   section: {
     marginTop: 8,

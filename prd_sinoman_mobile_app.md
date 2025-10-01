@@ -1066,7 +1066,7 @@ Week 3: Polish & Deployment
 
 \"android\": {
 
-\"package\": \"id.co.sinoman.mobile\",
+\"package\": \"id.sinomanapp.mobile\",
 
 \"versionCode\": 1,
 
@@ -1096,7 +1096,7 @@ Week 3: Polish & Deployment
 
 \"ios\": {
 
-\"bundleIdentifier\": \"id.co.sinoman.mobile\",
+\"bundleIdentifier\": \"id.sinomanapp.mobile\",
 
 \"buildNumber\": \"1.0.0\",
 

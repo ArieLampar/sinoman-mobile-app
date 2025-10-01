@@ -12,6 +12,7 @@ import { QRPaymentScreen } from '@screens/qr/QRPaymentScreen';
 import { MyQRCodeScreen } from '@screens/qr/MyQRCodeScreen';
 import { SettingsScreen } from '@screens/profile/SettingsScreen';
 import { EditProfileScreen } from '@screens/profile/EditProfileScreen';
+import { NotificationsScreen } from '@screens/profile/NotificationsScreen';
 import { FitChallengeScreen } from '@screens/fitChallenge/FitChallengeScreen';
 import { ProductDetailScreen } from '@screens/marketplace/ProductDetailScreen';
 import { CartScreen } from '@screens/marketplace/CartScreen';
@@ -94,6 +95,15 @@ export const RootNavigator: React.FC = () => {
             options={{
               headerShown: true,
               title: 'Pengaturan',
+            }}
+          />
+          <Stack.Screen
+            name="Notifications"
+            component={NotificationsScreen}
+            options={{
+              headerShown: true,
+              title: 'Notifikasi',
+              headerBackTitle: 'Kembali',
             }}
           />
           <Stack.Screen

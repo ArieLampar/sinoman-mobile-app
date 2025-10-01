@@ -8,6 +8,7 @@ import { MarketplaceScreen } from '../screens/marketplace/MarketplaceScreen';
 import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { BottomNavigation, BottomNavigationItem } from '../components/navigation';
 import { useMarketplaceStore } from '../store/marketplaceStore';
+import { useNotificationStore } from '../store/notificationStore';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -15,6 +16,8 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 const CustomTabBar = ({ state, descriptors, navigation }: any) => {
   // Get cart item count from marketplace store
   const cartItemCount = useMarketplaceStore((state) => state.cart.itemCount);
+  // Get unread notification count from notification store
+  const unreadCount = useNotificationStore((state) => state.unreadCount);
 
   // Icon mapping for each screen
   const iconMap: Record<string, { icon: string; focusedIcon?: string }> = {
@@ -31,10 +34,12 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
     const label = options.tabBarLabel ?? options.title ?? route.name;
     const iconConfig = iconMap[route.name] || { icon: 'circle' };
 
-    // Get badge from options or set cart badge for Marketplace
+    // Get badge from options or set badges for specific tabs
     let badge = options.tabBarBadge;
     if (route.name === 'Marketplace' && cartItemCount > 0) {
       badge = cartItemCount;
+    } else if (route.name === 'Profile' && unreadCount > 0) {
+      badge = unreadCount;
     }
 
     return {

@@ -21,6 +21,7 @@ export type RootStackParamList = {
   FitChallenge: undefined;
   KYCVerification: undefined;
   ChangePhone: undefined;
+  Notifications: undefined;
   NotificationSettings: undefined;
   SecuritySettings: undefined;
   HelpCenter: undefined;

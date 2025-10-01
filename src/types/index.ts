@@ -25,5 +25,8 @@ export * from './marketplace.types';
 // Fit Challenge types
 export * from './fitChallenge.types';
 
+// Notification types
+export * from './notification.types';
+
 // Additional types will be added in subsequent phases:
 // export * from './common.types';

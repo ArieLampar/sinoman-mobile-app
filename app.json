@@ -13,7 +13,7 @@
     },
     "assetBundlePatterns": ["**/*"],
     "android": {
-      "package": "id.co.sinoman.mobile",
+      "package": "id.sinomanapp.mobile",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -23,11 +23,13 @@
         "CAMERA",
         "USE_FINGERPRINT",
         "USE_BIOMETRIC",
-        "RECEIVE_BOOT_COMPLETED"
+        "RECEIVE_BOOT_COMPLETED",
+        "POST_NOTIFICATIONS",
+        "VIBRATE"
       ]
     },
     "ios": {
-      "bundleIdentifier": "id.co.sinoman.mobile",
+      "bundleIdentifier": "id.sinomanapp.mobile",
       "buildNumber": "1.0.0",
       "supportsTablet": true,
       "infoPlist": {

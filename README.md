@@ -163,6 +163,51 @@ refactor: restructure auth service
 test: add unit tests for validators
 ```
 
+## 🔔 Notification System
+
+Aplikasi ini menggunakan **Expo Push Notifications** dengan Supabase Realtime untuk notifikasi real-time.
+
+### Features:
+- ✅ Push notifications (iOS & Android)
+- ✅ In-app notifications
+- ✅ Realtime updates (balance, transactions, orders)
+- ✅ Notification preferences
+- ✅ Badge indicators
+- ✅ Smart navigation dari notification tap
+
+### Setup:
+
+Lihat dokumentasi lengkap di [`docs/SETUP_NOTIFICATIONS.md`](./docs/SETUP_NOTIFICATIONS.md)
+
+**Quick Start:**
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Setup Expo project
+npx eas init
+
+# 3. Add EAS_PROJECT_ID to .env
+EAS_PROJECT_ID=your-project-id
+
+# 4. Run app
+npm start
+```
+
+### Testing:
+
+Gunakan [Expo Push Notification Tool](https://expo.dev/notifications) untuk send test notifications.
+
+Lihat testing guide lengkap di [`docs/NOTIFICATION_TESTING.md`](./docs/NOTIFICATION_TESTING.md)
+
+### Documentation:
+
+- 📖 [Setup Guide](./docs/SETUP_NOTIFICATIONS.md)
+- 📖 [Implementation Guide](./docs/NOTIFICATION_IMPLEMENTATION.md)
+- 📖 [Testing Guide](./docs/NOTIFICATION_TESTING.md)
+- 📖 [System Summary](./docs/NOTIFICATION_SUMMARY.md)
+- 📖 [Quick Reference](./docs/NOTIFICATION_QUICKREF.md)
+
 ## Environment Variables
 
 Required environment variables in `.env`:
@@ -177,6 +222,9 @@ EXPO_PUBLIC_API_URL=https://api.sinoman.co.id
 
 # Environment
 EXPO_PUBLIC_ENV=development
+
+# Expo EAS Configuration (for push notifications)
+EAS_PROJECT_ID=your-expo-project-id-here
 ```
 
 ## Testing

@@ -1,6 +1,6 @@
 export const APP_NAME = 'Sinoman Mobile App';
 export const APP_VERSION = '1.0.0';
-export const APP_BUNDLE_ID = 'id.co.sinoman.mobile';
+export const APP_BUNDLE_ID = 'id.sinomanapp.mobile';
 
 // API Configuration
 export const API_TIMEOUT = 30000; // 30 seconds

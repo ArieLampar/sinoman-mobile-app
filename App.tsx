@@ -7,13 +7,19 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { RootNavigator } from './src/navigation';
 import { theme, loadFonts } from './src/theme';
-import { useInactivityTimer } from './src/hooks';
+import { useInactivityTimer, useNotifications } from './src/hooks';
+import { useAuthStore } from './src/store/authStore';
 import { logger } from './src/utils/logger';
 
 // Prevent auto-hide of splash screen
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
+  const { isAuthenticated } = useAuthStore();
+
+  // Initialize notifications when user is authenticated
+  useNotifications();
+
   // Enable inactivity timer for auto-logout
   useInactivityTimer();
 
