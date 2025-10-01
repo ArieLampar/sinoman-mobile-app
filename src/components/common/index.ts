@@ -12,3 +12,5 @@ export type { EmptyStateProps } from './EmptyState';
 
 export { TransactionItem } from './TransactionItem';
 export type { TransactionItemProps } from './TransactionItem';
+
+export { OfflineIndicator } from './OfflineIndicator';

@@ -5,17 +5,22 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MainTabScreenProps, PromotionalBanner } from '@types';
 import { useDashboard } from '@hooks/useDashboard';
 import { useAuthStore } from '@store/authStore';
+import { useNetworkStatus } from '@hooks/useNetworkStatus';
+import { useQRStore } from '@store/qrStore';
 import { BalanceCard } from '@components/dashboard/BalanceCard';
 import { QuickActionButton } from '@components/dashboard/QuickActionButton';
 import { BannerCarousel } from '@components/dashboard/BannerCarousel';
 import { DashboardSkeleton } from '@components/dashboard/DashboardSkeleton';
 import { TransactionItem } from '@components/common/TransactionItem';
 import { EmptyState } from '@components/common/EmptyState';
+import { OfflineIndicator } from '@components/common/OfflineIndicator';
 import { logger } from '@utils/logger';
 
 export const DashboardScreen: React.FC<MainTabScreenProps<'Dashboard'>> = ({ navigation }) => {
   const theme = useTheme();
   const { user } = useAuthStore();
+  const { isOffline } = useNetworkStatus();
+  const { getQueuedTransactionsCount } = useQRStore();
   const {
     balance,
     recentTransactions,
@@ -111,6 +116,13 @@ export const DashboardScreen: React.FC<MainTabScreenProps<'Dashboard'>> = ({ nav
               </Text>
             </View>
           </View>
+
+          {/* Offline Indicator */}
+          {(isOffline || getQueuedTransactionsCount() > 0) && (
+            <View style={styles.offlineSection}>
+              <OfflineIndicator />
+            </View>
+          )}
 
           {/* Balance Card */}
           <View style={styles.section}>
@@ -227,6 +239,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 16,
     gap: 12,
+  },
+  offlineSection: {
+    marginBottom: 16,
+    paddingHorizontal: 16,
   },
   transactionList: {
     borderRadius: 12,

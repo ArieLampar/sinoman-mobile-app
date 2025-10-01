@@ -7,13 +7,16 @@ import { BarCodeScanner, BarCodeEvent } from 'expo-barcode-scanner';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { MainTabScreenProps } from '@types';
 import { useQRStore } from '@store/qrStore';
+import { useNetworkStatus } from '@hooks/useNetworkStatus';
 
 export const QRScannerScreen: React.FC<MainTabScreenProps<'QRScanner'>> = ({ navigation }) => {
   const theme = useTheme();
   const { scanQRCode, isScanning, scanResult, clearScanResult } = useQRStore();
+  const { isOffline } = useNetworkStatus();
 
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
+  const [flashEnabled, setFlashEnabled] = useState(false);
 
   useEffect(() => {
     requestCameraPermission();
@@ -103,6 +106,7 @@ export const QRScannerScreen: React.FC<MainTabScreenProps<'QRScanner'>> = ({ nav
       <Camera
         style={styles.camera}
         type={CameraType.back}
+        enableTorch={flashEnabled}
         onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
         barCodeScannerSettings={{
           barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
@@ -118,6 +122,16 @@ export const QRScannerScreen: React.FC<MainTabScreenProps<'QRScanner'>> = ({ nav
               Arahkan kamera ke QR code untuk melakukan pembayaran
             </Text>
           </View>
+
+          {/* Offline Indicator */}
+          {isOffline && (
+            <View style={[styles.offlineIndicator, { backgroundColor: theme.colors.errorContainer }]}>
+              <Icon name="wifi-off" size={16} color={theme.colors.error} />
+              <Text variant="bodySmall" style={{ color: theme.colors.error, marginLeft: 8 }}>
+                Mode Offline - Transaksi akan disimpan
+              </Text>
+            </View>
+          )}
 
           {/* Scan Frame */}
           <View style={styles.scanFrame}>
@@ -150,6 +164,15 @@ export const QRScannerScreen: React.FC<MainTabScreenProps<'QRScanner'>> = ({ nav
                 Pindai Ulang
               </Button>
             )}
+            <Button
+              mode="text"
+              onPress={() => setFlashEnabled(!flashEnabled)}
+              icon={flashEnabled ? 'flash' : 'flash-off'}
+              style={styles.button}
+              textColor="#FFFFFF"
+            >
+              {flashEnabled ? 'Matikan Flash' : 'Nyalakan Flash'}
+            </Button>
             <Button
               mode="text"
               onPress={() => (navigation as any).navigate('QRGenerate')}
@@ -263,5 +286,15 @@ const styles = StyleSheet.create({
   footer: {
     padding: 24,
     gap: 12,
+  },
+  offlineIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginHorizontal: 24,
+    marginBottom: 16,
   },
 });

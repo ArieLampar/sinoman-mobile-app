@@ -93,6 +93,10 @@ export interface QRState {
   generatedQR: GenerateQRResponse | null;
   isGeneratingQR: boolean;
 
+  // Offline queue state
+  offlineQueue: QueuedTransaction[];
+  isSyncingQueue: boolean;
+
   // Error state
   error: string | null;
 
@@ -106,6 +110,13 @@ export interface QRState {
   clearPaymentResult: () => void;
   clearError: () => void;
   reset: () => void;
+
+  // Offline queue actions
+  addToOfflineQueue: (transaction: Omit<QueuedTransaction, 'id' | 'timestamp' | 'retryCount' | 'status'>) => void;
+  removeFromOfflineQueue: (id: string) => void;
+  syncOfflineQueue: () => Promise<SyncResult>;
+  clearOfflineQueue: () => void;
+  getQueuedTransactionsCount: () => number;
 }
 
 export interface QRPaymentHistory {
@@ -119,4 +130,31 @@ export interface QRPaymentHistory {
   notes?: string;
   receiptUrl?: string;
   createdAt: string;
+}
+
+// Offline Queue Types
+export interface QueuedTransaction {
+  id: string; // Unique ID for queue item
+  qrData: QRCodeData;
+  amount: number;
+  savingsType: string;
+  notes?: string;
+  timestamp: string; // When queued
+  retryCount: number;
+  status: 'pending' | 'syncing' | 'failed';
+  error?: string;
+}
+
+export interface OfflineQueueState {
+  queue: QueuedTransaction[];
+  isSyncing: boolean;
+  lastSyncAttempt?: string;
+  failedCount: number;
+}
+
+export interface SyncResult {
+  success: boolean;
+  syncedCount: number;
+  failedCount: number;
+  errors?: Array<{ id: string; error: string }>;
 }

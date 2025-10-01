@@ -9,6 +9,7 @@ import { TopUpScreen } from '@screens/savings/TopUpScreen';
 import { TransactionHistoryScreen } from '@screens/savings/TransactionHistoryScreen';
 import { ReceiptScreen } from '@screens/savings/ReceiptScreen';
 import { QRPaymentScreen } from '@screens/qr/QRPaymentScreen';
+import { MyQRCodeScreen } from '@screens/qr/MyQRCodeScreen';
 import { SettingsScreen } from '@screens/profile/SettingsScreen';
 import { useAuthStore } from '@store/authStore';
 
@@ -69,6 +70,15 @@ export const RootNavigator: React.FC = () => {
             options={{
               headerShown: true,
               title: 'Konfirmasi Pembayaran',
+              presentation: 'modal',
+            }}
+          />
+          <Stack.Screen
+            name="QRGenerate"
+            component={MyQRCodeScreen}
+            options={{
+              headerShown: true,
+              title: 'QR Code Saya',
               presentation: 'modal',
             }}
           />

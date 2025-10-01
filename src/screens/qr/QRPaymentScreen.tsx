@@ -7,6 +7,7 @@ import { QRCodeData, MerchantInfo, SavingsType } from '@types';
 import { useQRStore } from '@store/qrStore';
 import { useSavingsStore } from '@store/savingsStore';
 import { formatCurrency } from '@utils/formatters';
+import { OfflineIndicator } from '@components/common/OfflineIndicator';
 
 interface QRPaymentScreenProps {
   navigation: any;
@@ -72,12 +73,17 @@ export const QRPaymentScreen: React.FC<QRPaymentScreenProps> = ({ navigation, ro
             });
 
             if (result.success) {
-              Alert.alert('Pembayaran Berhasil', result.message || 'Transaksi telah selesai', [
-                {
-                  text: 'OK',
-                  onPress: () => navigation.navigate('Dashboard'),
-                },
-              ]);
+              const isQueued = result.message?.includes('disimpan');
+              Alert.alert(
+                isQueued ? 'Transaksi Disimpan' : 'Pembayaran Berhasil',
+                result.message || 'Transaksi telah selesai',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => navigation.navigate('Dashboard'),
+                  },
+                ]
+              );
             } else {
               Alert.alert('Pembayaran Gagal', result.error || 'Terjadi kesalahan');
             }
@@ -140,6 +146,9 @@ export const QRPaymentScreen: React.FC<QRPaymentScreenProps> = ({ navigation, ro
             </Card.Content>
           </Card>
         )}
+
+        {/* Offline Indicator */}
+        <OfflineIndicator />
 
         {/* Amount */}
         <Card style={styles.card}>
