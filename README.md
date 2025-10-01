@@ -192,6 +192,36 @@ npm run test:coverage
 npm run test:e2e
 ```
 
+### Testing Fit Challenge
+
+**Testing Challenge Overview:**
+1. Navigate to Profile → Tap "Fit Challenge" menu item
+2. Verify challenge info displays (8 weeks, participant count)
+3. Verify progress stats (streak, points, rank)
+4. Scroll through weekly progress (8 weeks)
+5. View leaderboard top 10
+6. Pull-to-refresh to update data
+
+**Testing Daily Check-in:**
+1. Open Fit Challenge screen
+2. Tap "Check-in Hari Ini" button
+3. Verify success alert shows "+10 poin"
+4. Verify button changes to "Sudah Check-in Hari Ini" (disabled)
+5. Verify progress updates (completed days, points)
+6. Verify streak increments if consecutive day
+7. Verify leaderboard rank updates
+
+**Testing Edit Profile:**
+1. Navigate to Profile → Tap "Edit Profil"
+2. Update name field (test validation: min 3 chars)
+3. Update email (test validation: valid format)
+4. Update date of birth (test format: YYYY-MM-DD)
+5. Change gender selection
+6. Update address fields
+7. Tap "Simpan Perubahan"
+8. Verify success alert appears
+9. Verify profile screen shows updated data
+
 ### Testing Offline Features
 
 **Testing QR Scanner Flash Toggle:**
@@ -303,8 +333,10 @@ Proprietary - Koperasi Sinoman Ponorogo
 ✅ **Phase 4**: QR Payment & Profile (Scanner, Payment, Settings)
 ✅ **Auth Enhancement**: Registration Flow & Android OTP Auto-Read
 ✅ **QR Enhancement**: Flash Toggle, MyQRCode Screen, Offline Support
+✅ **Phase 5**: Marketplace Module (Product Browsing, Cart, Checkout)
+✅ **Phase 6**: Profile & Settings Complete (Edit Profile, Fit Challenge)
 
-**Current Status**: QR Scanner & Payment - 100% Complete with Offline Support 🎉
+**Current Status**: All Core Features - 100% Complete 🎉
 
 **See Documentation**:
 - [Phase 1 Summary](IMPLEMENTATION_SUMMARY.md)
@@ -400,3 +432,107 @@ The authentication system includes:
 - `@react-native-community/netinfo` - Network connectivity detection
 - `expo-camera` - Camera access for QR scanning
 - `expo-barcode-scanner` - QR code recognition
+
+## Marketplace Features
+
+The marketplace module includes:
+
+### Product Browsing
+- Product catalog with grid/list view
+- Category filtering (All, Sembako, Fashion, Elektronik, etc.)
+- Search functionality
+- Product images with Cloudinary integration
+- Price display with Indonesian Rupiah formatting
+- Stock availability indicators
+
+### Product Details
+- Full product information (name, price, description, stock)
+- Image gallery with zoom support
+- Add to cart functionality
+- Quantity selector
+- Category badge
+- Merchant information
+
+### Shopping Cart
+- Cart item management (add, update quantity, remove)
+- Real-time total calculation
+- Stock validation
+- Persistent cart state (Zustand)
+- Empty cart state handling
+- Checkout button with total amount
+
+### Order Processing
+- Checkout screen with order summary
+- Shipping address input
+- Order notes (optional)
+- Payment method selection
+- Order confirmation with order ID
+- Order total calculation
+- Transaction integration with savings balance
+
+### State Management
+- **Marketplace Store (Zustand)**: Products, categories, cart, orders
+- Cart persistence across app sessions
+- Real-time cart updates
+- Order history tracking
+
+## Profile & Settings Features
+
+The profile and settings module includes:
+
+### Profile Management
+- ✅ Profile header with avatar and basic info
+- ✅ **Edit Profile** functionality with form validation
+  - Full name (required, min 3 characters)
+  - Email (optional, validated)
+  - Date of birth (YYYY-MM-DD format)
+  - Gender selection (Laki-laki, Perempuan, Lainnya)
+  - Occupation (optional)
+  - Address information (address, city, postal code, province)
+- ✅ Profile photo upload support
+- ✅ KYC verification status badge
+- ✅ Phone number change option
+
+### Fit Challenge Program
+- ✅ **8-week health challenge** with daily check-ins
+- ✅ **Daily check-in functionality** (maximum 1 per day)
+- ✅ **Progress tracking** with completion percentage
+- ✅ **Streak tracking** (current streak and longest streak)
+- ✅ **Points system** (10 points per check-in, bonus for streaks)
+- ✅ **Weekly progress breakdown** (8 weeks with completion status)
+- ✅ **Leaderboard** with top 10 participants
+  - Medal icons for top 3 (🥇🥈🥉)
+  - Participant ranking with points and streak display
+  - "My Rank" display if outside top 10
+- ✅ **Challenge rules** display with visual checkmarks
+- ✅ **Pull-to-refresh** for real-time data updates
+- ✅ **Visual progress indicators** (progress bars, stats grid)
+- ✅ **Participant count** and duration display
+- ✅ **Registration fee** display (Rp 600,000)
+
+### Settings & Preferences
+- ✅ Biometric authentication toggle (TouchID/FaceID/Fingerprint)
+- ✅ Notification preferences management
+- ✅ Language selection (Bahasa Indonesia)
+- ✅ Theme selection (Light/Dark/System)
+- ✅ Privacy settings
+- ✅ Help center access
+- ✅ About app information
+- ✅ Terms & conditions
+- ✅ Privacy policy
+- ✅ Logout with confirmation dialog
+
+### State Management
+- **Profile Store (Zustand)**: User profile data, update operations
+- **Fit Challenge Store (Zustand)**: Challenge data, progress, leaderboard, check-ins
+- Form validation with real-time error messages
+- Persistent settings across app sessions
+- Profile photo upload to Supabase storage
+
+### Fit Challenge Data Flow
+- Service layer with mock data (Supabase migration path prepared)
+- Weekly progress calculation (8 weeks × 7 days)
+- Check-in validation (1 per day, datetime-based)
+- Leaderboard sorting by points and streak
+- Automatic rank updates after check-ins
+- Pull-to-refresh triggers parallel data fetching

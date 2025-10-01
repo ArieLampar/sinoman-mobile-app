@@ -22,5 +22,8 @@ export * from './profile.types';
 // Marketplace types
 export * from './marketplace.types';
 
+// Fit Challenge types
+export * from './fitChallenge.types';
+
 // Additional types will be added in subsequent phases:
 // export * from './common.types';

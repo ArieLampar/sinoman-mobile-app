@@ -11,6 +11,8 @@ import { ReceiptScreen } from '@screens/savings/ReceiptScreen';
 import { QRPaymentScreen } from '@screens/qr/QRPaymentScreen';
 import { MyQRCodeScreen } from '@screens/qr/MyQRCodeScreen';
 import { SettingsScreen } from '@screens/profile/SettingsScreen';
+import { EditProfileScreen } from '@screens/profile/EditProfileScreen';
+import { FitChallengeScreen } from '@screens/fitChallenge/FitChallengeScreen';
 import { ProductDetailScreen } from '@screens/marketplace/ProductDetailScreen';
 import { CartScreen } from '@screens/marketplace/CartScreen';
 import { CheckoutScreen } from '@screens/marketplace/CheckoutScreen';
@@ -92,6 +94,24 @@ export const RootNavigator: React.FC = () => {
             options={{
               headerShown: true,
               title: 'Pengaturan',
+            }}
+          />
+          <Stack.Screen
+            name="EditProfile"
+            component={EditProfileScreen}
+            options={{
+              headerShown: true,
+              title: 'Edit Profil',
+              animation: 'slide_from_right',
+            }}
+          />
+          <Stack.Screen
+            name="FitChallenge"
+            component={FitChallengeScreen}
+            options={{
+              headerShown: true,
+              title: 'Fit Challenge',
+              animation: 'slide_from_right',
             }}
           />
           <Stack.Screen

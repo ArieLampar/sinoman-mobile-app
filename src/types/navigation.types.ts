@@ -18,6 +18,7 @@ export type RootStackParamList = {
   QRGenerate: undefined;
   Settings: undefined;
   EditProfile: undefined;
+  FitChallenge: undefined;
   KYCVerification: undefined;
   ChangePhone: undefined;
   NotificationSettings: undefined;

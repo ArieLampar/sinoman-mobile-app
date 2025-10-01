@@ -59,6 +59,18 @@ export const ProfileScreen: React.FC<MainTabScreenProps<'Profile'>> = ({ navigat
       ],
     },
     {
+      title: 'Program',
+      items: [
+        {
+          id: 'fit-challenge',
+          label: 'Fit Challenge',
+          icon: 'run',
+          badge: 'Aktif',
+          onPress: () => (navigation as any).navigate('FitChallenge'),
+        },
+      ],
+    },
+    {
       title: 'Pengaturan',
       items: [
         {
