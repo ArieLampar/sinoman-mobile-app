@@ -107,6 +107,93 @@ export function validateEmail(email: string): boolean {
 }
 
 /**
+ * Get email validation error message
+ * @param email - Email to validate
+ * @returns Error message or null if valid
+ */
+export function getEmailValidationError(email: string): string | null {
+  if (!email) {
+    return null; // Email is optional
+  }
+
+  if (!validateEmail(email)) {
+    return 'Format email tidak valid';
+  }
+
+  return null;
+}
+
+/**
+ * Validate name
+ * @param name - Name to validate
+ * @returns True if valid
+ */
+export function validateName(name: string): boolean {
+  if (!name) return false;
+
+  const trimmed = name.trim();
+  return trimmed.length >= 2 && trimmed.length <= 100;
+}
+
+/**
+ * Get name validation error message
+ * @param name - Name to validate
+ * @returns Error message or null if valid
+ */
+export function getNameValidationError(name: string): string | null {
+  if (!name || !name.trim()) {
+    return 'Nama harus diisi';
+  }
+
+  const trimmed = name.trim();
+
+  if (trimmed.length < 2) {
+    return 'Nama terlalu pendek (minimal 2 karakter)';
+  }
+
+  if (trimmed.length > 100) {
+    return 'Nama terlalu panjang (maksimal 100 karakter)';
+  }
+
+  return null;
+}
+
+/**
+ * Validate address
+ * @param address - Address to validate
+ * @returns True if valid
+ */
+export function validateAddress(address: string): boolean {
+  if (!address) return true; // Address is optional
+
+  const trimmed = address.trim();
+  return trimmed.length >= 5 && trimmed.length <= 500;
+}
+
+/**
+ * Get address validation error message
+ * @param address - Address to validate
+ * @returns Error message or null if valid
+ */
+export function getAddressValidationError(address: string): string | null {
+  if (!address || !address.trim()) {
+    return null; // Address is optional
+  }
+
+  const trimmed = address.trim();
+
+  if (trimmed.length < 5) {
+    return 'Alamat terlalu pendek (minimal 5 karakter)';
+  }
+
+  if (trimmed.length > 500) {
+    return 'Alamat terlalu panjang (maksimal 500 karakter)';
+  }
+
+  return null;
+}
+
+/**
  * Validate top-up amount
  * @param amount - Amount to validate
  * @returns True if valid

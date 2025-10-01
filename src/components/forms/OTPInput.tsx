@@ -1,7 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, TextInput, StyleSheet, Pressable } from 'react-native';
+import { View, TextInput, StyleSheet, Pressable, Platform } from 'react-native';
 import { useTheme, Text } from 'react-native-paper';
 import { VALIDATION } from '@utils/constants';
+import RNOtpVerify from 'react-native-otp-verify';
 
 interface OTPInputProps {
   value: string;
@@ -11,6 +12,7 @@ interface OTPInputProps {
   error?: string;
   disabled?: boolean;
   autoFocus?: boolean;
+  enableAutoRead?: boolean;
 }
 
 export const OTPInput: React.FC<OTPInputProps> = ({
@@ -21,6 +23,7 @@ export const OTPInput: React.FC<OTPInputProps> = ({
   error,
   disabled = false,
   autoFocus = true,
+  enableAutoRead = true,
 }) => {
   const theme = useTheme();
   const inputRefs = useRef<(TextInput | null)[]>([]);
@@ -38,6 +41,51 @@ export const OTPInput: React.FC<OTPInputProps> = ({
       inputRefs.current[0].focus();
     }
   }, [autoFocus]);
+
+  useEffect(() => {
+    // Setup Android SMS auto-read
+    if (Platform.OS === 'android' && enableAutoRead) {
+      // Get app signature hash (required for SMS Retriever API)
+      RNOtpVerify.getHash()
+        .then((hash) => {
+          console.log('SMS Hash:', hash);
+        })
+        .catch((error) => {
+          console.log('Error getting SMS hash:', error);
+        });
+
+      // Start listening for SMS
+      RNOtpVerify.getOtp()
+        .then(() => RNOtpVerify.addListener(otpHandler))
+        .catch((error) => {
+          console.log('Error starting OTP listener:', error);
+        });
+
+      return () => {
+        RNOtpVerify.removeListener();
+      };
+    }
+  }, [enableAutoRead]);
+
+  const otpHandler = (message: string) => {
+    try {
+      // Extract OTP from SMS message
+      // Common patterns: "123456 is your OTP", "Your code: 123456", etc.
+      const otpMatch = message.match(/\b\d{6}\b/);
+
+      if (otpMatch) {
+        const extractedOtp = otpMatch[0];
+        onChangeText(extractedOtp);
+
+        // Automatically trigger completion
+        if (onComplete) {
+          onComplete(extractedOtp);
+        }
+      }
+    } catch (error) {
+      console.log('Error extracting OTP from SMS:', error);
+    }
+  };
 
   useEffect(() => {
     // Trigger onComplete when all digits are filled

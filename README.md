@@ -255,13 +255,50 @@ Proprietary - Koperasi Sinoman Ponorogo
 
 ✅ **Phase 1**: Foundation Setup (Navigation, Services, Types)
 ✅ **Phase 2**: Authentication System (Phone OTP, Biometric)
+✅ **Phase 2 Design System**: Design Tokens & Core Components
 ✅ **Phase 3**: Dashboard & Savings (Balance, Transactions, Top Up)
 ✅ **Phase 4**: QR Payment & Profile (Scanner, Payment, Settings)
+✅ **Auth Enhancement**: Registration Flow & Android OTP Auto-Read
 
 **Current Status**: MVP Complete - Ready for Testing 🎉
 
 **See Documentation**:
 - [Phase 1 Summary](IMPLEMENTATION_SUMMARY.md)
 - [Phase 2 Complete](PHASE_2_COMPLETE.md)
+- [Phase 2 Design System](PHASE_2_DESIGN_SYSTEM_COMPLETE.md)
 - [Phase 3 Complete](docs/PHASE_3_COMPLETE.md)
 - [Phase 4 Complete](docs/PHASE_4_COMPLETE.md)
+
+## Authentication Features
+
+The authentication system includes:
+
+### Phone + OTP Authentication
+- Indonesian phone number validation (08XXXXXXXXX)
+- 6-digit OTP verification via Supabase Auth
+- OTP expiry countdown (180 seconds)
+- Resend OTP functionality
+
+### Android OTP Auto-Read
+- Automatic SMS detection using SMS Retriever API
+- Auto-fills OTP from incoming SMS
+- No SMS permission required
+- Works on Android devices only
+
+### User Registration
+- Profile completion after first-time OTP verification
+- Collects: Name (required), Email (optional), Address (optional)
+- Field validation with Indonesian error messages
+- Seamless transition to main app after registration
+
+### Biometric Authentication
+- TouchID/FaceID/Fingerprint support
+- Optional enablement per user
+- Fallback to OTP if biometric fails
+- Secure session management with refresh tokens
+
+### Session Management
+- JWT-based access + refresh tokens
+- Persistent sessions using AsyncStorage
+- Auto-logout after 15 minutes of inactivity
+- Automatic session refresh on app foreground

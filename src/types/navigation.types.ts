@@ -29,7 +29,7 @@ import { QRCodeData, MerchantInfo } from './qr.types';
 export type AuthStackParamList = {
   Login: undefined;
   OTP: { phone: string };
-  Register: { phone: string; otp: string };
+  Register: undefined;
 };
 
 // Main Tab Navigator

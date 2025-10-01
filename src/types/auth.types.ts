@@ -5,6 +5,8 @@ export interface User {
   phone: string;
   email?: string;
   name?: string;
+  address?: string;
+  isProfileComplete?: boolean;
   createdAt: string;
   updatedAt?: string;
 }
@@ -23,7 +25,8 @@ export interface AuthState {
 
   // Actions
   sendOtp: (phone: string) => Promise<{ success: boolean; error?: string }>;
-  verifyOtp: (phone: string, otp: string) => Promise<{ success: boolean; error?: string }>;
+  verifyOtp: (phone: string, otp: string) => Promise<{ success: boolean; error?: string; isProfileComplete?: boolean }>;
+  completeRegistration: (data: RegistrationData) => Promise<{ success: boolean; error?: string }>;
   signOut: () => Promise<void>;
   checkSession: () => Promise<void>;
   enableBiometric: (enabled: boolean) => Promise<void>;
@@ -45,6 +48,23 @@ export interface AuthError {
 export interface OtpResponse {
   success: boolean;
   error?: string;
+  isProfileComplete?: boolean;
+}
+
+export interface RegistrationData {
+  name: string;
+  email?: string;
+  address?: string;
+}
+
+export interface RegistrationRequest extends RegistrationData {
+  userId: string;
+}
+
+export interface RegistrationResponse {
+  success: boolean;
+  error?: string;
+  user?: User;
 }
 
 export interface SessionData {
@@ -59,6 +79,8 @@ export function toUser(supabaseUser: SupabaseUser): User {
     phone: supabaseUser.phone || '',
     email: supabaseUser.email,
     name: supabaseUser.user_metadata?.name,
+    address: supabaseUser.user_metadata?.address,
+    isProfileComplete: supabaseUser.user_metadata?.is_profile_complete ?? false,
     createdAt: supabaseUser.created_at,
     updatedAt: supabaseUser.updated_at,
   };

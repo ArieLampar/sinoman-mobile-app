@@ -42,6 +42,7 @@
     "react-native-screens": "~3.25.0",
     "react-native-url-polyfill": "^2.0.0",
     "react-native-vector-icons": "^10.0.0",
+    "react-native-otp-verify": "^1.1.8",
     "zustand": "^4.4.0"
   },
   "devDependencies": {

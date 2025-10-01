@@ -15,6 +15,7 @@ import {
   getStoredUserData,
   saveBiometricPreference,
   getBiometricPreference,
+  completeRegistration as completeRegistrationService,
 } from '@services/auth';
 import { logger } from '@utils/logger';
 
@@ -69,17 +70,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await saveUserData(user);
       }
 
-      // Update state
+      // Check if profile is complete
+      const isProfileComplete = user?.isProfileComplete ?? false;
+
+      // Update state - only set isAuthenticated to true if profile is complete
       set({
         session: result.session,
         user,
-        isAuthenticated: true,
+        isAuthenticated: isProfileComplete,
         isLoading: false,
         error: null,
       });
 
-      logger.info('User authenticated successfully');
-      return { success: true };
+      logger.info('User authenticated successfully', { isProfileComplete });
+      return { success: true, isProfileComplete };
     } catch (error: any) {
       const errorMessage = error.message || 'Terjadi kesalahan';
       set({ error: errorMessage, isLoading: false });
@@ -220,6 +224,46 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       });
 
       logger.info('Biometric authentication successful');
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = error.message || 'Terjadi kesalahan';
+      set({ error: errorMessage, isLoading: false });
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  completeRegistration: async (data) => {
+    try {
+      set({ isLoading: true, error: null });
+
+      const currentUser = get().user;
+      if (!currentUser) {
+        set({ error: 'User tidak ditemukan', isLoading: false });
+        return { success: false, error: 'User tidak ditemukan' };
+      }
+
+      const result = await completeRegistrationService({
+        userId: currentUser.id,
+        ...data,
+      });
+
+      if (!result.success) {
+        set({ error: result.error || 'Gagal melengkapi registrasi', isLoading: false });
+        return result;
+      }
+
+      // Update user state with completed profile and set isAuthenticated to true
+      if (result.user) {
+        await saveUserData(result.user);
+        set({
+          user: result.user,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null,
+        });
+      }
+
+      logger.info('Registration completed successfully');
       return { success: true };
     } catch (error: any) {
       const errorMessage = error.message || 'Terjadi kesalahan';

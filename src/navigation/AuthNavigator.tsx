@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthStackParamList } from '@types';
 import { LoginScreen } from '@screens/auth/LoginScreen';
 import { OTPScreen } from '@screens/auth/OTPScreen';
+import { RegistrationScreen } from '@screens/auth/RegistrationScreen';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
@@ -17,6 +18,12 @@ export const AuthNavigator: React.FC = () => (
   >
     <Stack.Screen name="Login" component={LoginScreen} />
     <Stack.Screen name="OTP" component={OTPScreen} />
-    {/* Register screen will be added if needed */}
+    <Stack.Screen
+      name="Register"
+      component={RegistrationScreen}
+      options={{
+        gestureEnabled: false, // Prevent swipe back during registration
+      }}
+    />
   </Stack.Navigator>
 );

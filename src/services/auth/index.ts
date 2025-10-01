@@ -8,6 +8,12 @@ export {
   onAuthStateChange,
 } from './supabaseAuth';
 
+// Registration
+export {
+  completeRegistration,
+  checkProfileComplete,
+} from './registration';
+
 // Biometric Auth
 export {
   isBiometricAvailable,

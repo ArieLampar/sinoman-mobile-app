@@ -59,8 +59,15 @@ export const OTPScreen: React.FC<AuthScreenProps<'OTP'>> = ({ navigation, route 
 
     if (!result.success) {
       setError(result.error || 'Kode OTP tidak valid');
+      return;
     }
-    // If successful, auth store will handle navigation via RootNavigator
+
+    // Check if profile is complete
+    if (result.isProfileComplete === false) {
+      // Navigate to registration screen to complete profile
+      navigation.navigate('Register');
+    }
+    // If profile is complete, auth store will handle navigation via RootNavigator
   };
 
   const handleResendOtp = async () => {
@@ -137,6 +144,7 @@ export const OTPScreen: React.FC<AuthScreenProps<'OTP'>> = ({ navigation, route 
                 error={displayError || undefined}
                 disabled={isLoading}
                 autoFocus
+                enableAutoRead={true}
               />
             </View>
 
