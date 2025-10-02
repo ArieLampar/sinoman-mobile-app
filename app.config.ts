@@ -5,6 +5,13 @@ export default (): ExpoConfig => {
 
   return {
     ...config,
+    ios: {
+      ...config.ios,
+      infoPlist: {
+        ...config.ios?.infoPlist,
+        ITSAppUsesNonExemptEncryption: false,
+      },
+    },
     extra: {
       supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
       supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
@@ -14,7 +21,7 @@ export default (): ExpoConfig => {
       sentryEnvironment: process.env.EXPO_PUBLIC_ENV || 'development',
       sentryRelease: process.env.EXPO_PUBLIC_SENTRY_RELEASE || '1.0.0',
       eas: {
-        projectId: process.env.EAS_PROJECT_ID,
+        projectId: process.env.EAS_PROJECT_ID || '06863a61-aa5a-4f34-b0e8-7be02c7514eb',
       },
     },
   };

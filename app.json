@@ -23,8 +23,7 @@
     ],
     "android": {
       "package": "id.sinomanapp.mobile",
-      "versionCode": 1,
-      "enableHermes": true,
+      "versionCode": 2,
       "allowBackup": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -62,13 +61,17 @@
       }
     },
     "updates": {
-      "fallbackToCacheTimeout": 0
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/06863a61-aa5a-4f34-b0e8-7be02c7514eb"
     },
     "extra": {
       "sentryDsn": "https://your-key@sentry.io/your-project-id",
       "eas": {
         "projectId": "06863a61-aa5a-4f34-b0e8-7be02c7514eb"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }

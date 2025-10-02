@@ -22,6 +22,45 @@ const ANDROID_DENSITIES = [
   { name: 'xxxhdpi', size: 192 }
 ];
 
+async function createPlaceholderSource() {
+  const source = path.join(ASSETS_DIR, 'icon-source.png');
+
+  if (!fs.existsSync(source)) {
+    console.log('Creating placeholder icon-source.png...');
+    const svgIcon = `
+      <svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1024" height="1024" fill="#059669"/>
+        <circle cx="512" cy="512" r="350" fill="white"/>
+        <text x="512" y="620" font-family="Arial" font-size="400" font-weight="bold"
+              fill="#059669" text-anchor="middle">S</text>
+      </svg>
+    `;
+    await sharp(Buffer.from(svgIcon))
+      .png()
+      .toFile(source);
+    console.log('✅ Placeholder icon-source.png created');
+  }
+}
+
+async function createPlaceholderSplashSource() {
+  const source = path.join(ASSETS_DIR, 'splash-source.png');
+
+  if (!fs.existsSync(source)) {
+    console.log('Creating placeholder splash-source.png...');
+    const svgSplash = `
+      <svg width="2048" height="2048" xmlns="http://www.w3.org/2000/svg">
+        <rect width="2048" height="2048" fill="#059669"/>
+        <text x="1024" y="1100" font-family="Arial" font-size="300" font-weight="bold"
+              fill="white" text-anchor="middle">SINOMAN</text>
+      </svg>
+    `;
+    await sharp(Buffer.from(svgSplash))
+      .png()
+      .toFile(source);
+    console.log('✅ Placeholder splash-source.png created');
+  }
+}
+
 async function generateIcons() {
   const source = path.join(ASSETS_DIR, 'icon-source.png');
 
@@ -137,6 +176,8 @@ async function generateMonochromeIcon() {
 async function main() {
   console.log('🎨 Generating production assets...\n');
 
+  await createPlaceholderSource();
+  await createPlaceholderSplashSource();
   await generateIcons();
   await generateSplash();
   await generateNotificationIcon();
