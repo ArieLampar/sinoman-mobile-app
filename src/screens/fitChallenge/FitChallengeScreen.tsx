@@ -11,7 +11,6 @@ import {
   ScrollView,
   StyleSheet,
   RefreshControl,
-  Alert,
   Dimensions,
 } from 'react-native';
 import {
@@ -28,6 +27,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFitChallengeStore } from '@/store/fitChallengeStore';
 import { FitChallengeParticipant } from '@/types';
+import { toastError, toastSuccess, showSuccessToast } from '@utils/toast';
+import { successNotification } from '@utils/haptics';
 
 const { width } = Dimensions.get('window');
 
@@ -68,7 +69,7 @@ export const FitChallengeScreen: React.FC = () => {
     if (!currentChallenge) return;
 
     if (!myProgress?.nextCheckInAvailable) {
-      Alert.alert('Sudah Check-in', 'Anda sudah check-in hari ini. Coba lagi besok!');
+      toastError('Anda sudah check-in hari ini. Coba lagi besok!');
       return;
     }
 
@@ -77,13 +78,15 @@ export const FitChallengeScreen: React.FC = () => {
     });
 
     if (response.success) {
-      Alert.alert(
-        'Check-in Berhasil! 🎉',
-        response.message || 'Anda mendapat +10 poin!',
-        [{ text: 'OK' }]
-      );
+      // Trigger success haptic
+      successNotification();
+
+      showSuccessToast({
+        title: 'Check-in Berhasil! 🎉',
+        message: response.message || 'Anda mendapat +10 poin!',
+      });
     } else {
-      Alert.alert('Check-in Gagal', response.message || 'Terjadi kesalahan');
+      toastError(response.message || 'Terjadi kesalahan');
     }
   };
 

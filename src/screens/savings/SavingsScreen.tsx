@@ -8,11 +8,17 @@ import { BalanceCard } from '@components/dashboard/BalanceCard';
 import { MonthlyChart } from '@components/savings/MonthlyChart';
 import { TransactionItem } from '@components/common/TransactionItem';
 import { EmptyState } from '@components/common/EmptyState';
+import { SavingsSkeleton } from '@components/skeletons';
 import { formatCurrency } from '@utils/formatters';
+import { useAnalytics } from '@hooks';
 
 export const SavingsScreen: React.FC<MainTabScreenProps<'Savings'>> = ({ navigation }) => {
   const theme = useTheme();
   const [selectedType, setSelectedType] = useState<SavingsType>(SavingsType.SUKARELA);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Track analytics
+  useAnalytics('Savings');
 
   const {
     balance,
@@ -28,9 +34,15 @@ export const SavingsScreen: React.FC<MainTabScreenProps<'Savings'>> = ({ navigat
   } = useSavingsStore();
 
   useEffect(() => {
-    fetchBalance();
-    fetchTransactions(1);
-    fetchChartData(selectedType);
+    const loadData = async () => {
+      await Promise.all([
+        fetchBalance(),
+        fetchTransactions(1),
+        fetchChartData(selectedType)
+      ]);
+      setIsInitialLoad(false);
+    };
+    loadData();
   }, [fetchBalance, fetchTransactions]);
 
   useEffect(() => {
@@ -77,6 +89,10 @@ export const SavingsScreen: React.FC<MainTabScreenProps<'Savings'>> = ({ navigat
   const filteredTransactions = transactions.filter(
     (t) => t.savingsType === selectedType
   );
+
+  if (isLoading && isInitialLoad) {
+    return <SavingsSkeleton />;
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>

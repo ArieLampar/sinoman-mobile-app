@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { Button } from './Button';
 
 interface EmptyStateProps {
@@ -22,32 +23,42 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   const theme = useTheme();
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}>
+    <Animated.View
+      style={styles.container}
+      entering={FadeInDown.duration(400).springify()}
+    >
+      <Animated.View
+        style={[styles.iconContainer, { backgroundColor: theme.colors.surfaceVariant }]}
+        entering={FadeIn.delay(100)}
+      >
         <Icon name={icon} size={64} color={theme.colors.onSurfaceVariant} />
-      </View>
+      </Animated.View>
 
-      <Text variant="headlineSmall" style={[styles.title, { color: theme.colors.onSurface }]}>
-        {title}
-      </Text>
+      <Animated.View entering={FadeIn.delay(200)}>
+        <Text variant="headlineSmall" style={[styles.title, { color: theme.colors.onSurface }]}>
+          {title}
+        </Text>
+      </Animated.View>
 
       {description && (
-        <Text
-          variant="bodyLarge"
-          style={[styles.description, { color: theme.colors.onSurfaceVariant }]}
-        >
-          {description}
-        </Text>
+        <Animated.View entering={FadeIn.delay(300)}>
+          <Text
+            variant="bodyLarge"
+            style={[styles.description, { color: theme.colors.onSurfaceVariant }]}
+          >
+            {description}
+          </Text>
+        </Animated.View>
       )}
 
       {actionLabel && onAction && (
-        <View style={styles.actionContainer}>
+        <Animated.View style={styles.actionContainer} entering={FadeIn.delay(400)}>
           <Button onPress={onAction} variant="primary">
             {actionLabel}
           </Button>
-        </View>
+        </Animated.View>
       )}
-    </View>
+    </Animated.View>
   );
 };
 

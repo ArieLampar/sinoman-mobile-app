@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Text,
@@ -19,6 +19,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList, Address } from '@types';
 import { useMarketplaceStore } from '@store/marketplaceStore';
 import { formatCurrency } from '@utils/formatters';
+import { toastError, showSuccessToast } from '@utils/toast';
+import { successNotification } from '@utils/haptics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Checkout'>;
 
@@ -40,23 +42,23 @@ export const CheckoutScreen: React.FC = () => {
 
   const validateForm = (): boolean => {
     if (!recipientName.trim()) {
-      Alert.alert('Validation Error', 'Please enter recipient name');
+      toastError('Mohon masukkan nama penerima');
       return false;
     }
     if (!phone.trim()) {
-      Alert.alert('Validation Error', 'Please enter phone number');
+      toastError('Mohon masukkan nomor telepon');
       return false;
     }
     if (!street.trim()) {
-      Alert.alert('Validation Error', 'Please enter street address');
+      toastError('Mohon masukkan alamat jalan');
       return false;
     }
     if (!city.trim()) {
-      Alert.alert('Validation Error', 'Please enter city');
+      toastError('Mohon masukkan kota');
       return false;
     }
     if (!postalCode.trim()) {
-      Alert.alert('Validation Error', 'Please enter postal code');
+      toastError('Mohon masukkan kode pos');
       return false;
     }
     return true;
@@ -82,22 +84,29 @@ export const CheckoutScreen: React.FC = () => {
     });
 
     if (response.success && response.order) {
-      Alert.alert(
-        'Order Placed Successfully!',
-        `Order ID: ${response.orderId}`,
-        [
-          {
-            text: 'View Order',
-            onPress: () =>
-              navigation.replace('OrderConfirmation', {
-                orderId: response.orderId!,
-                order: response.order!,
-              }),
-          },
-        ]
-      );
+      // Trigger success haptic
+      successNotification();
+
+      showSuccessToast({
+        title: 'Pesanan Berhasil!',
+        message: `Order ID: ${response.orderId}`,
+        duration: 3000,
+        onPress: () =>
+          navigation.replace('OrderConfirmation', {
+            orderId: response.orderId!,
+            order: response.order!,
+          }),
+      });
+
+      // Auto navigate to confirmation
+      setTimeout(() => {
+        navigation.replace('OrderConfirmation', {
+          orderId: response.orderId!,
+          order: response.order!,
+        });
+      }, 3000);
     } else {
-      Alert.alert('Order Failed', response.error || 'Failed to place order. Please try again.');
+      toastError(response.error || 'Gagal memproses pesanan. Silakan coba lagi.');
     }
   };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Text, useTheme, Button, ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, CameraType } from 'expo-camera';
@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { MainTabScreenProps } from '@types';
 import { useQRStore } from '@store/qrStore';
 import { useNetworkStatus } from '@hooks/useNetworkStatus';
+import { toastError } from '@utils/toast';
 
 export const QRScannerScreen: React.FC<MainTabScreenProps<'QRScanner'>> = ({ navigation }) => {
   const theme = useTheme();
@@ -36,15 +37,9 @@ export const QRScannerScreen: React.FC<MainTabScreenProps<'QRScanner'>> = ({ nav
         setScanned(false);
       }, 500);
     } else if (scanResult && !scanResult.success) {
-      Alert.alert('Scan Gagal', scanResult.error || 'QR code tidak valid', [
-        {
-          text: 'OK',
-          onPress: () => {
-            clearScanResult();
-            setScanned(false);
-          },
-        },
-      ]);
+      toastError(scanResult.error || 'QR code tidak valid');
+      clearScanResult();
+      setScanned(false);
     }
   }, [scanResult]);
 

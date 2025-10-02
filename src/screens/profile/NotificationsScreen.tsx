@@ -24,6 +24,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNotificationStore } from '@store/notificationStore';
 import { EmptyState } from '@components/common/EmptyState';
+import { NotificationsSkeleton } from '@components/skeletons';
+import { useAnalytics } from '@hooks';
 import type { PushNotification, NotificationType } from '@types';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@types';
@@ -32,9 +34,15 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Notifications'>;
 
 export const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
   const theme = useTheme();
+
+  // Track analytics
+  useAnalytics('Notifications');
+
   const {
     notifications,
     unreadCount,
+    isLoading,
+    isInitialized,
     markAsRead,
     markAllAsRead,
     deleteNotification,
@@ -43,6 +51,14 @@ export const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
 
   const [selectedCategory, setSelectedCategory] = useState<'all' | NotificationType>('all');
   const [menuVisible, setMenuVisible] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Track initial load completion
+  useEffect(() => {
+    if (isInitialized || notifications.length > 0) {
+      setIsInitialLoad(false);
+    }
+  }, [isInitialized, notifications.length]);
 
   // Filter notifications based on selected category
   const filteredNotifications = notifications.filter(
@@ -201,6 +217,11 @@ export const NotificationsScreen: React.FC<Props> = ({ navigation }) => {
       ]
     );
   };
+
+  // Show skeleton on initial load
+  if (isLoading && isInitialLoad) {
+    return <NotificationsSkeleton />;
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>

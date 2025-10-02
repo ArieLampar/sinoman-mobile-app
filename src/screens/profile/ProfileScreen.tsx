@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Text, useTheme, Card, ActivityIndicator, Divider } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,14 +7,24 @@ import { useProfileStore } from '@store/profileStore';
 import { useAuthStore } from '@store/authStore';
 import { ProfileHeader } from '@components/profile/ProfileHeader';
 import { ProfileMenuItem } from '@components/profile/ProfileMenuItem';
+import { ProfileSkeleton } from '@components/skeletons';
+import { useAnalytics } from '@hooks';
 
 export const ProfileScreen: React.FC<MainTabScreenProps<'Profile'>> = ({ navigation }) => {
   const theme = useTheme();
   const { profile, isLoadingProfile, fetchProfile } = useProfileStore();
   const { signOut } = useAuthStore();
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Track analytics
+  useAnalytics('Profile');
 
   useEffect(() => {
-    fetchProfile();
+    const loadData = async () => {
+      await fetchProfile();
+      setIsInitialLoad(false);
+    };
+    loadData();
   }, [fetchProfile]);
 
   const handleSignOut = () => {
@@ -135,17 +145,8 @@ export const ProfileScreen: React.FC<MainTabScreenProps<'Profile'>> = ({ navigat
     },
   ];
 
-  if (isLoadingProfile || !profile) {
-    return (
-      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text variant="bodyLarge" style={{ color: theme.colors.onSurface, marginTop: 16 }}>
-            Memuat profil...
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
+  if ((isLoadingProfile && isInitialLoad) || !profile) {
+    return <ProfileSkeleton />;
   }
 
   return (

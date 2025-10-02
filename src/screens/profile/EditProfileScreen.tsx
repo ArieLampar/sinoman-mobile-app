@@ -11,7 +11,6 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import {
   TextInput,
@@ -25,6 +24,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { useProfileStore } from '@/store/profileStore';
+import { toastError, showSuccessToast } from '@utils/toast';
 
 type Gender = 'male' | 'female' | 'other';
 
@@ -125,7 +125,7 @@ export const EditProfileScreen: React.FC = () => {
    */
   const handleSave = async () => {
     if (!validateForm()) {
-      Alert.alert('Validasi Gagal', 'Mohon periksa kembali data yang Anda masukkan');
+      toastError('Mohon periksa kembali data yang Anda masukkan');
       return;
     }
 
@@ -142,17 +142,22 @@ export const EditProfileScreen: React.FC = () => {
     });
 
     if (success) {
-      Alert.alert('Berhasil', 'Profil Anda berhasil diperbarui', [
-        {
-          text: 'OK',
-          onPress: () => {
-            fetchProfile(); // Refresh profile data
-            navigation.goBack();
-          },
+      showSuccessToast({
+        title: 'Berhasil',
+        message: 'Profil Anda berhasil diperbarui',
+        onPress: () => {
+          fetchProfile(); // Refresh profile data
+          navigation.goBack();
         },
-      ]);
+      });
+
+      // Auto navigate back after toast
+      setTimeout(() => {
+        fetchProfile();
+        navigation.goBack();
+      }, 2000);
     } else {
-      Alert.alert('Gagal', 'Terjadi kesalahan saat memperbarui profil');
+      toastError('Terjadi kesalahan saat memperbarui profil');
     }
   };
 

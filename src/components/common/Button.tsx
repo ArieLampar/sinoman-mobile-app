@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
 import { Button as PaperButton } from 'react-native-paper';
 import { useAppTheme } from '../../theme';
+import { lightImpact } from '../../utils/haptics';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'text';
 export type ButtonSize = 'small' | 'medium' | 'large';
@@ -30,6 +31,11 @@ export const Button: React.FC<ButtonProps> = ({
   style,
 }) => {
   const theme = useAppTheme();
+
+  const handlePress = async () => {
+    await lightImpact();
+    if (onPress) onPress();
+  };
 
   const getButtonMode = (): 'text' | 'outlined' | 'contained' | 'elevated' | 'contained-tonal' => {
     switch (variant) {
@@ -107,7 +113,7 @@ export const Button: React.FC<ButtonProps> = ({
   return (
     <PaperButton
       mode={getButtonMode()}
-      onPress={onPress}
+      onPress={handlePress}
       loading={loading}
       disabled={disabled || loading}
       icon={icon}

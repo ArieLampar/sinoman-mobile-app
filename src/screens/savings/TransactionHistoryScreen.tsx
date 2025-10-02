@@ -8,6 +8,8 @@ import { RootStackParamList, SavingsType, Transaction } from '@types';
 import { useSavingsStore } from '@store/savingsStore';
 import { TransactionItem } from '@components/common/TransactionItem';
 import { EmptyState } from '@components/common/EmptyState';
+import { TransactionHistorySkeleton } from '@components/skeletons';
+import { useAnalytics } from '@hooks';
 
 type TransactionHistoryScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'TransactionHistory'>;
 type TransactionHistoryScreenRouteProp = RouteProp<RootStackParamList, 'TransactionHistory'>;
@@ -26,9 +28,17 @@ export const TransactionHistoryScreen: React.FC<TransactionHistoryScreenProps> =
     route?.params?.savingsType || 'all'
   );
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'success' | 'failed'>('all');
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Track analytics
+  useAnalytics('TransactionHistory');
 
   useEffect(() => {
-    fetchTransactions(1);
+    const loadData = async () => {
+      await fetchTransactions(1);
+      setIsInitialLoad(false);
+    };
+    loadData();
   }, []);
 
   // Filter transactions
@@ -54,6 +64,10 @@ export const TransactionHistoryScreen: React.FC<TransactionHistoryScreenProps> =
   const handleRefresh = () => {
     fetchTransactions(1);
   };
+
+  if (isLoading && isInitialLoad) {
+    return <TransactionHistorySkeleton />;
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>

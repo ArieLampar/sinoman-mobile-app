@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, StyleSheet, ScrollView, Dimensions, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -24,6 +24,7 @@ import { useMarketplaceStore } from '@store/marketplaceStore';
 import { formatCurrency } from '@utils/formatters';
 import { ImagePresets, BlurhashPresets } from '@utils/imageCache';
 import * as marketplaceService from '@services/marketplace';
+import { toastError, showSuccessToast } from '@utils/toast';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'ProductDetail'>;
 type ProductDetailRouteProp = RouteProp<RootStackParamList, 'ProductDetail'>;
@@ -62,28 +63,12 @@ export const ProductDetailScreen: React.FC = () => {
             setProduct(foundProduct);
           } else {
             // Product not found
-            Alert.alert(
-              'Product Not Found',
-              'The product you are looking for is not available.',
-              [
-                {
-                  text: 'Go Back',
-                  onPress: () => navigation.goBack(),
-                },
-              ]
-            );
+            toastError('Produk yang Anda cari tidak tersedia');
+            navigation.goBack();
           }
         } catch (error) {
-          Alert.alert(
-            'Error',
-            'Failed to load product details. Please try again.',
-            [
-              {
-                text: 'Go Back',
-                onPress: () => navigation.goBack(),
-              },
-            ]
-          );
+          toastError('Gagal memuat detail produk. Silakan coba lagi.');
+          navigation.goBack();
         } finally {
           setIsLoading(false);
         }
@@ -105,21 +90,11 @@ export const ProductDetailScreen: React.FC = () => {
   const handleAddToCart = useCallback(() => {
     if (!product) return;
     addToCart(product, quantity, notes);
-    Alert.alert(
-      'Added to Cart',
-      `${quantity} ${product.unit} of ${product.name} added to cart`,
-      [
-        {
-          text: 'Continue Shopping',
-          style: 'cancel',
-          onPress: () => navigation.goBack(),
-        },
-        {
-          text: 'View Cart',
-          onPress: () => navigation.navigate('Cart'),
-        },
-      ]
-    );
+    showSuccessToast({
+      title: 'Ditambahkan ke Keranjang',
+      message: `${quantity} ${product.unit} ${product.name} ditambahkan`,
+      onPress: () => navigation.navigate('Cart'),
+    });
   }, [product, quantity, notes, addToCart, navigation]);
 
   const discountAmount = useMemo(() =>

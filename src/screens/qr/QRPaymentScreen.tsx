@@ -8,6 +8,8 @@ import { useQRStore } from '@store/qrStore';
 import { useSavingsStore } from '@store/savingsStore';
 import { formatCurrency } from '@utils/formatters';
 import { OfflineIndicator } from '@components/common/OfflineIndicator';
+import { toastError, showSuccessToast } from '@utils/toast';
+import { successNotification } from '@utils/haptics';
 
 interface QRPaymentScreenProps {
   navigation: any;
@@ -44,16 +46,16 @@ export const QRPaymentScreen: React.FC<QRPaymentScreenProps> = ({ navigation, ro
   const handlePayment = async () => {
     // Validation
     if (numericAmount < 1000) {
-      Alert.alert('Jumlah Tidak Valid', 'Minimal pembayaran adalah Rp 1.000');
+      toastError('Minimal pembayaran adalah Rp 1.000');
       return;
     }
 
     if (!isSufficientBalance) {
-      Alert.alert('Saldo Tidak Cukup', `Saldo ${getSavingsTypeLabel(selectedSavingsType)} Anda tidak mencukupi`);
+      toastError(`Saldo ${getSavingsTypeLabel(selectedSavingsType)} Anda tidak mencukupi`);
       return;
     }
 
-    // Confirm payment
+    // Confirm payment - KEEP Alert for confirmation dialog
     Alert.alert(
       'Konfirmasi Pembayaran',
       `Anda akan membayar ${formatCurrency(numericAmount)} ke ${merchant?.name || 'penerima'} menggunakan ${getSavingsTypeLabel(selectedSavingsType)}. Lanjutkan?`,
@@ -74,18 +76,20 @@ export const QRPaymentScreen: React.FC<QRPaymentScreenProps> = ({ navigation, ro
 
             if (result.success) {
               const isQueued = result.message?.includes('disimpan');
-              Alert.alert(
-                isQueued ? 'Transaksi Disimpan' : 'Pembayaran Berhasil',
-                result.message || 'Transaksi telah selesai',
-                [
-                  {
-                    text: 'OK',
-                    onPress: () => navigation.navigate('Dashboard'),
-                  },
-                ]
-              );
+              // Trigger success haptic
+              successNotification();
+
+              showSuccessToast({
+                title: isQueued ? 'Transaksi Disimpan' : 'Pembayaran Berhasil',
+                message: result.message || 'Transaksi telah selesai',
+                duration: 3000,
+                onPress: () => navigation.navigate('Dashboard'),
+              });
+
+              // Auto navigate after toast
+              setTimeout(() => navigation.navigate('Dashboard'), 3000);
             } else {
-              Alert.alert('Pembayaran Gagal', result.error || 'Terjadi kesalahan');
+              toastError(result.error || 'Terjadi kesalahan');
             }
           },
         },

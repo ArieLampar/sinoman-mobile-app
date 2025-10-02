@@ -32,6 +32,18 @@ export const UI = {
   MIN_TOUCH_TARGET: 44, // Accessibility requirement
 };
 
+// Spacing System
+export const spacing = {
+  xxs: 2,
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+  xxxl: 64,
+} as const;
+
 // Session Configuration
 export const SESSION = {
   TIMEOUT_MINUTES: 15,

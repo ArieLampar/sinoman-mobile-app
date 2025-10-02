@@ -6,12 +6,15 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import { BackHandler, Alert } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
+import Toast from 'react-native-toast-message';
 import { RootNavigator } from './src/navigation';
 import { theme, loadFonts } from './src/theme';
 import { useInactivityTimer, useNotifications } from './src/hooks';
 import { useAuthStore } from './src/store/authStore';
 import { logger } from './src/utils/logger';
 import { SecurityWarningModal, ErrorBoundary } from './src/components/common';
+import { createToastConfig } from './src/components/common/ToastConfig';
+import { checkHapticsSupport } from './src/utils/haptics';
 import {
   checkDeviceSecurity,
   shouldBlockApp,
@@ -123,6 +126,10 @@ export default function App() {
         // Log app open event
         await logEvent(AnalyticsEvents.APP_OPEN);
 
+        // Check haptics support
+        const hapticsSupported = await checkHapticsSupport();
+        logger.info('Haptics supported:', hapticsSupported);
+
         // Load custom fonts
         const fontsLoaded = await loadFonts();
         if (fontsLoaded) {
@@ -170,6 +177,9 @@ export default function App() {
             )}
           </PaperProvider>
         </SafeAreaProvider>
+
+        {/* Toast Notifications */}
+        <Toast config={createToastConfig()} />
       </GestureHandlerRootView>
     </ErrorBoundary>
   );

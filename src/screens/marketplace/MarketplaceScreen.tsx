@@ -21,12 +21,17 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList, Product } from '@types';
 import { useMarketplaceStore } from '@store/marketplaceStore';
 import { ProductCard } from '@components/marketplace/ProductCard';
+import { MarketplaceSkeleton } from '@components/skeletons';
+import { useAnalytics } from '@hooks';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export const MarketplaceScreen: React.FC = () => {
   const theme = useTheme();
   const navigation = useNavigation<NavigationProp>();
+
+  // Track analytics
+  useAnalytics('Marketplace');
 
   const {
     products,
@@ -43,11 +48,15 @@ export const MarketplaceScreen: React.FC = () => {
   } = useMarketplaceStore();
 
   const [localSearchQuery, setLocalSearchQuery] = useState('');
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Initial data fetch
   useEffect(() => {
-    fetchCategories();
-    fetchProducts();
+    const loadData = async () => {
+      await Promise.all([fetchCategories(), fetchProducts()]);
+      setIsInitialLoad(false);
+    };
+    loadData();
   }, []);
 
   // Memoize callbacks to prevent unnecessary re-renders
@@ -174,11 +183,8 @@ export const MarketplaceScreen: React.FC = () => {
       </View>
 
       {/* Products List */}
-      {isLoadingProducts ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" />
-          <Text style={styles.loadingText}>Loading products...</Text>
-        </View>
+      {isLoadingProducts && isInitialLoad ? (
+        <MarketplaceSkeleton />
       ) : products.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Text variant="titleLarge" style={styles.emptyTitle}>

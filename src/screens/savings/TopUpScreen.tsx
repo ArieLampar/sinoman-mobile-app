@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { Text, useTheme, Button, TextInput, Card, RadioButton, Divider } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { SavingsType, PaymentMethod, PaymentMethodOption } from '@types';
 import { useSavingsStore } from '@store/savingsStore';
 import { formatCurrency } from '@utils/formatters';
+import { toastError, showSuccessToast } from '@utils/toast';
 
 interface TopUpScreenProps {
   navigation: any;
@@ -79,17 +80,17 @@ export const TopUpScreen: React.FC<TopUpScreenProps> = ({ navigation, route }) =
   const handleTopUp = async () => {
     // Validation
     if (numericAmount < minAmount) {
-      Alert.alert('Jumlah Tidak Valid', `Minimal top up adalah ${formatCurrency(minAmount)}`);
+      toastError(`Minimal top up adalah ${formatCurrency(minAmount)}`);
       return;
     }
 
     if (numericAmount > maxAmount) {
-      Alert.alert('Jumlah Tidak Valid', `Maksimal top up adalah ${formatCurrency(maxAmount)}`);
+      toastError(`Maksimal top up adalah ${formatCurrency(maxAmount)}`);
       return;
     }
 
     if (!selectedPayment?.enabled) {
-      Alert.alert('Metode Pembayaran', 'Metode pembayaran yang dipilih tidak tersedia');
+      toastError('Metode pembayaran yang dipilih tidak tersedia');
       return;
     }
 
@@ -112,29 +113,23 @@ export const TopUpScreen: React.FC<TopUpScreenProps> = ({ navigation, route }) =
           });
         } else {
           // Fallback if receipt generation fails
-          Alert.alert(
-            'Top Up Berhasil',
-            `Saldo ${getSavingsTypeLabel(selectedType)} Anda telah bertambah ${formatCurrency(numericAmount)}`,
-            [
-              {
-                text: 'OK',
-                onPress: () => navigation.goBack(),
-              },
-            ]
-          );
+          showSuccessToast({
+            title: 'Top Up Berhasil',
+            message: `Saldo ${getSavingsTypeLabel(selectedType)} Anda telah bertambah ${formatCurrency(numericAmount)}`,
+            onPress: () => navigation.goBack(),
+          });
         }
       } else if (result.status === 'pending' && result.paymentUrl) {
         // Navigate to payment page (WebView)
         // TODO: Implement payment WebView screen
-        Alert.alert('Menunggu Pembayaran', 'Silakan selesaikan pembayaran Anda', [
-          {
-            text: 'OK',
-            onPress: () => navigation.goBack(),
-          },
-        ]);
+        showSuccessToast({
+          title: 'Menunggu Pembayaran',
+          message: 'Silakan selesaikan pembayaran Anda',
+          onPress: () => navigation.goBack(),
+        });
       }
     } catch (error: any) {
-      Alert.alert('Top Up Gagal', error.message || 'Terjadi kesalahan saat melakukan top up');
+      toastError(error.message || 'Terjadi kesalahan saat melakukan top up');
     }
   };
 

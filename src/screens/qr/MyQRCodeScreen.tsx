@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Share, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Share } from 'react-native';
 import { Text, useTheme, Button, Card, SegmentedButtons, TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
@@ -14,6 +14,7 @@ import { useQRStore } from '@store/qrStore';
 import { QRCodeType } from '@types';
 import { formatCurrency } from '@utils/formatters';
 import { logger } from '@utils/logger';
+import { toastSuccess } from '@utils/toast';
 
 export const MyQRCodeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
   const theme = useTheme();
@@ -59,7 +60,7 @@ export const MyQRCodeScreen: React.FC<{ navigation: any }> = ({ navigation }) =>
 
   const handleRefresh = () => {
     generateQR();
-    Alert.alert('QR Code Diperbarui', 'QR code baru telah dibuat');
+    toastSuccess('QR code baru telah dibuat');
   };
 
   return (
