@@ -16,7 +16,8 @@
       },
       "env": {
         "EXPO_PUBLIC_ENV": "development"
-      }
+      },
+      "channel": "development"
     },
     "preview": {
       "distribution": "internal",
@@ -28,7 +29,8 @@
       },
       "env": {
         "EXPO_PUBLIC_ENV": "staging"
-      }
+      },
+      "channel": "preview"
     },
     "production": {
       "node": "20.18.0",
