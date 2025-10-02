@@ -35,6 +35,14 @@ GoogleService-Info.plist
 *.key
 *.mobileprovision
 *.orig.*
+*.keystore
+
+# EAS Build
+.eas/
+build/
+
+# Signing credentials (NEVER commit)
+google-play-service-account.json
 
 # Android
 android/app/build/
@@ -54,3 +62,23 @@ coverage/
 *.log
 *.tmp
 .cache/
+
+# Store assets (large files - upload separately)
+store-assets/screenshots/*.png
+store-assets/screenshots/*.jpg
+store-assets/videos/*.mp4
+
+# Generated assets (can be regenerated from source)
+# NOTE: adaptive-icon-monochrome.png and notification-icon.png are NOT ignored
+# because they are required by app.json and must exist for builds to succeed
+assets/icon.png
+assets/splash.png
+assets/adaptive-icon.png
+assets/ios/
+assets/android/
+
+# Keep these assets - required for builds
+!assets/icon-source.png
+!assets/splash-source.png
+!assets/adaptive-icon-monochrome.png
+!assets/notification-icon.png

@@ -356,40 +356,196 @@ npm run test:e2e
 
 ## Building for Production
 
-### Android
+### EAS Build Setup
 
+**Prerequisites:**
+- Expo account (https://expo.dev)
+- EAS CLI: `npm install -g eas-cli`
+- Login: `eas login`
+
+**Initialize EAS:**
 ```bash
-# Build APK for testing
-eas build --platform android --profile preview
-
-# Build AAB for Play Store
-eas build --platform android --profile production
+eas init
+eas build:configure
 ```
 
-### iOS
-
-```bash
-# Build for TestFlight
-eas build --platform ios --profile preview
-
-# Build for App Store
-eas build --platform ios --profile production
+**Important**: After `eas init`, update `app.json` with your EAS project ID:
+```json
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id-from-eas-init"
+      }
+    }
+  }
+}
 ```
 
-## Deployment
+### Build Profiles
 
-### Prerequisites
+We have 3 build profiles (configured in [eas.json](eas.json)):
 
-- EAS CLI installed (`npm install -g eas-cli`)
-- EAS account configured
-- App Store Connect account (iOS)
-- Google Play Console account (Android)
+#### Development Build
+```bash
+# Android APK (for emulator/device testing)
+eas build --profile development --platform android
 
-### Steps
+# iOS Simulator build
+eas build --profile development --platform ios
+```
 
-1. Configure EAS: `eas build:configure`
-2. Build: `eas build --platform all`
-3. Submit: `eas submit --platform all`
+#### Preview Build (Beta Testing)
+```bash
+# Internal testing and beta distribution
+eas build --profile preview --platform android
+eas build --profile preview --platform ios
+
+# Both platforms
+eas build --profile preview --platform all
+```
+
+#### Production Build (App Store Submission)
+```bash
+# Android App Bundle (Google Play)
+eas build --profile production --platform android
+
+# iOS IPA (App Store)
+eas build --profile production --platform ios
+
+# Both platforms (recommended)
+eas build --profile production --platform all
+```
+
+**Build time:** 15-25 minutes per platform
+
+### Asset Preparation
+
+Before building for production, prepare app icons and splash screens:
+
+1. **Create source assets:**
+   - `assets/icon-source.png` (1024x1024)
+   - `assets/splash-source.png` (2048x2048)
+   - `assets/adaptive-icon-monochrome.png` (1024x1024, white silhouette)
+
+2. **Generate all sizes:**
+   ```bash
+   npm install --save-dev sharp
+   node scripts/generate-production-assets.js
+   ```
+
+### Environment Configuration
+
+Configure environment secrets for production builds:
+
+```bash
+# Supabase
+eas secret:create --name EXPO_PUBLIC_SUPABASE_URL --value "https://your-project.supabase.co"
+eas secret:create --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value "your-anon-key"
+
+# Sentry
+eas secret:create --name EXPO_PUBLIC_SENTRY_DSN --value "https://your-key@sentry.io/your-project-id"
+
+# List all secrets
+eas secret:list
+```
+
+**Firebase Configuration:**
+- Place `google-services.json` in project root (Android)
+- Place `GoogleService-Info.plist` in project root (iOS)
+- **DO NOT commit these files to Git** (already in .gitignore)
+
+## Store Submission
+
+### Google Play Store
+
+**Prepare Store Listing:**
+- App name: "Sinoman - Koperasi Digital"
+- Screenshots: 5-8 images (1080x1920)
+- Feature graphic: 1024x500
+- Privacy Policy: https://sinomanapp.id/privacy-policy
+
+**Submit Build:**
+```bash
+# Submit to Google Play (internal testing track)
+eas submit --profile production --platform android
+```
+
+**Store Listing Templates:**
+- See [store-assets/descriptions/google-play-listing.md](store-assets/descriptions/google-play-listing.md) for complete content
+
+### Apple App Store
+
+**Prepare Store Listing:**
+- App name: "Sinoman - Koperasi Digital"
+- Subtitle: "Simpanan, Belanja, Kesehatan"
+- Screenshots: 5-10 images per size (6.5" and 5.5" displays required)
+- Privacy Policy: https://sinomanapp.id/privacy-policy
+
+**Submit Build:**
+```bash
+# Submit to App Store Connect
+eas submit --profile production --platform ios
+```
+
+**Store Listing Templates:**
+- See [store-assets/descriptions/app-store-listing.md](store-assets/descriptions/app-store-listing.md) for complete content
+
+### Store Screenshots
+
+Capture production screenshots for store listings:
+
+**Required Screenshots:**
+1. Dashboard with balance
+2. QR Scanner for payment
+3. Savings detail with chart
+4. Marketplace product grid
+5. Fit Challenge progress
+
+**Screenshot Guide:**
+- See [store-assets/screenshots/README.md](store-assets/screenshots/README.md) for detailed instructions
+
+## Documentation
+
+### Build & Deployment
+- **[Build & Deployment Guide](docs/BUILD_AND_DEPLOYMENT.md)** - Complete build and submission process
+- **[Store Submission Checklist](docs/STORE_SUBMISSION_CHECKLIST.md)** - Pre-submission verification checklist
+- **[Privacy Policy](legal/PRIVACY_POLICY.md)** - User data privacy policy
+- **[Terms of Service](legal/TERMS_OF_SERVICE.md)** - App terms and conditions
+
+### Quick Commands Reference
+
+```bash
+# Setup
+eas login
+eas init
+eas build:configure
+
+# Validation (run before building)
+npm run validate-eas        # Validate EAS configuration
+npm run verify-assets       # Verify all assets exist
+
+# Build
+eas build --profile production --platform all
+eas build:list
+
+# Submit
+eas submit --profile production --platform all
+
+# Secrets
+eas secret:create --name NAME --value "value"
+eas secret:list
+
+# Assets
+npm run generate-icons                # Create placeholder icons
+npm run generate-production-assets    # Generate all production assets
+```
+
+### App Store Links
+
+**Download the app:**
+- [Google Play Store](https://play.google.com/store/apps/details?id=id.sinomanapp.mobile)
+- [Apple App Store](https://apps.apple.com/id/app/sinoman/id...)
 
 ## Contributing
 

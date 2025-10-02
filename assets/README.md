@@ -43,6 +43,37 @@ This directory contains the visual assets required for the Sinoman Mobile App.
 
 **Current Placeholder**: White/transparent Sinoman "S" logo on transparent background
 
+### 4. Adaptive Icon Monochrome (`adaptive-icon-monochrome.png`) ⚠️ REQUIRED
+- **Size**: 1024x1024 pixels
+- **Format**: PNG with transparency
+- **Description**: Android 13+ themed icon (white silhouette only)
+- **Color**: White (#FFFFFF) silhouette on transparent background
+- **Design Guidelines**:
+  - Simple, recognizable silhouette of your logo
+  - Only white color, no gradients or other colors
+  - Works on any background color (system-controlled)
+  - No text or fine details
+  - Bold, clear outline
+
+**Current Placeholder**: White circle with "S" outline (MUST be replaced for production)
+
+**Note**: This file is REQUIRED by app.json. Builds will fail if missing.
+
+### 5. Notification Icon (`notification-icon.png`) ⚠️ REQUIRED
+- **Size**: 96x96 pixels
+- **Format**: PNG with transparency
+- **Description**: Android notification tray icon
+- **Color**: White (#FFFFFF) silhouette on transparent background
+- **Design Guidelines**:
+  - Simplified version of your logo
+  - Only white color
+  - Clear at small sizes (status bar)
+  - No fine details
+
+**Current Placeholder**: White circle with "S" (MUST be replaced for production)
+
+**Note**: This file is REQUIRED by app.json. Builds will fail if missing.
+
 ## Creating Production Assets
 
 For production deployment, replace these placeholders with professionally designed assets:
@@ -120,8 +151,13 @@ assets/
 ├── icon.png (1024x1024 - App icon)
 ├── splash.png (1284x2778 - Splash screen)
 ├── adaptive-icon.png (1024x1024 - Android adaptive icon foreground)
-└── .gitkeep (ensures directory is tracked)
+├── adaptive-icon-monochrome.png (1024x1024 - Android 13+ themed icon) ⚠️ REQUIRED
+├── notification-icon.png (96x96 - Notification tray icon) ⚠️ REQUIRED
+├── icon-source.png (optional - 1024x1024 source for generation)
+└── splash-source.png (optional - 2048x2048 source for generation)
 ```
+
+**Note**: Files marked with ⚠️ are referenced in app.json and MUST exist for builds to succeed.
 
 ## Updating Assets
 
