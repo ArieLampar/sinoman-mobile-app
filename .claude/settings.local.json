@@ -9,7 +9,10 @@
       "Bash(test:*)",
       "Bash(node:*)",
       "Bash(npm run verify-assets:*)",
-      "Bash(npm run validate-eas:*)"
+      "Bash(npm run validate-eas:*)",
+      "Bash(eas project:info:*)",
+      "Bash(npx expo config:*)",
+      "Bash(eas build:*)"
     ],
     "deny": [],
     "ask": []
