@@ -23,7 +23,7 @@
     ],
     "android": {
       "package": "id.sinomanapp.mobile",
-      "versionCode": 2,
+      "versionCode": 4,
       "allowBackup": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",

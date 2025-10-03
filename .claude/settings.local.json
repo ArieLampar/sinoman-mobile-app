@@ -12,7 +12,15 @@
       "Bash(npm run validate-eas:*)",
       "Bash(eas project:info:*)",
       "Bash(npx expo config:*)",
-      "Bash(eas build:*)"
+      "Bash(eas build:*)",
+      "Bash(npm run generate-icons:*)",
+      "Bash(cp:*)",
+      "Bash(npx expo-doctor:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(cat:*)",
+      "Bash(if exist android dir android)",
+      "Bash(rm:*)",
+      "Bash(if exist NUL del NUL)"
     ],
     "deny": [],
     "ask": []

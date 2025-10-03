@@ -5,6 +5,14 @@ export default (): ExpoConfig => {
 
   return {
     ...config,
+    plugins: [
+      'expo-font',
+      'expo-secure-store',
+      ...(config.plugins || []),
+    ],
+    android: {
+      ...config.android,
+    },
     ios: {
       ...config.ios,
       infoPlist: {
