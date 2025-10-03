@@ -20,7 +20,10 @@
       "Bash(cat:*)",
       "Bash(if exist android dir android)",
       "Bash(rm:*)",
-      "Bash(if exist NUL del NUL)"
+      "Bash(if exist NUL del NUL)",
+      "Bash(npx react-native:*)",
+      "Bash(npx expo start:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

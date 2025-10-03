@@ -126,7 +126,7 @@ async function loadCartFromStorage(): Promise<CartItem[]> {
 
     // Decrypt data using AES-256-GCM
     const aesKey = await getOrCreateCartAESKey();
-    const items = decryptJSON<CartItem[]>(encryptedData, aesKey);
+    const items = await decryptJSON<CartItem[]>(encryptedData, aesKey);
 
     logger.info('Cart loaded and decrypted from storage', { itemCount: items.length });
     return items;
@@ -145,7 +145,7 @@ async function saveCartToStorage(items: CartItem[]): Promise<void> {
 
     // Encrypt data using AES-256-GCM
     const aesKey = await getOrCreateCartAESKey();
-    const encryptedData = encryptJSON(items, aesKey);
+    const encryptedData = await encryptJSON(items, aesKey);
 
     store.set('@sinoman:cart', encryptedData);
     logger.info('Cart encrypted and saved to storage', { itemCount: items.length });

@@ -6,6 +6,8 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
+    "entryPoint": "./index.js",
+    "main": "index.js",
     "description": "Aplikasi resmi Koperasi Sinoman Ponorogo untuk kelola simpanan, belanja, dan program kesehatan.",
     "primaryColor": "#059669",
     "scheme": "sinoman",
@@ -23,7 +25,7 @@
     ],
     "android": {
       "package": "id.sinomanapp.mobile",
-      "versionCode": 4,
+      "versionCode": 6,
       "allowBackup": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",

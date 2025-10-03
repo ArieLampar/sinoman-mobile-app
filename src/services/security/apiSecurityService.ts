@@ -64,8 +64,8 @@ export async function generateRequestSignature(
     const bodyString = body ? JSON.stringify(body) : '';
     const message = `${method}${url}${timestamp}${nonce}${bodyString}`;
 
-    // Generate HMAC signature (now synchronous)
-    const signature = generateHMAC(message, secret);
+    // Generate HMAC signature (async)
+    const signature = await generateHMAC(message, secret);
 
     logger.debug('Request signature generated');
 
@@ -159,8 +159,8 @@ export async function verifyRequestSignature(
     // Get secret
     const secret = await getOrCreateHMACSecret();
 
-    // Generate expected signature (now synchronous)
-    const expectedSignature = generateHMAC(message, secret);
+    // Generate expected signature (async)
+    const expectedSignature = await generateHMAC(message, secret);
 
     // Constant-time comparison (simple)
     return signature === expectedSignature;

@@ -95,7 +95,7 @@ export async function getQueue(): Promise<QueuedTransaction[]> {
 
     // Decrypt data using AES-256-GCM
     const aesKey = await getOrCreateAESKey();
-    const queue = decryptJSON<QueuedTransaction[]>(encryptedData, aesKey);
+    const queue = await decryptJSON<QueuedTransaction[]>(encryptedData, aesKey);
 
     logger.info('Offline queue loaded and decrypted:', queue.length);
     return queue;
@@ -115,7 +115,7 @@ async function saveQueue(queue: QueuedTransaction[]): Promise<void> {
 
     // Encrypt data using AES-256-GCM
     const aesKey = await getOrCreateAESKey();
-    const encryptedData = encryptJSON(queue, aesKey);
+    const encryptedData = await encryptJSON(queue, aesKey);
 
     store.set(STORAGE_KEYS.OFFLINE_QUEUE, encryptedData);
     logger.info('Offline queue encrypted and saved:', queue.length);
