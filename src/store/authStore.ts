@@ -32,19 +32,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // Actions
   sendOtp: async (phone: string) => {
     try {
-      set({ isLoading: true, error: null });
+      set({ error: null });
       const result = await sendOtpService(phone);
 
       if (!result.success) {
-        set({ error: result.error || 'Gagal mengirim OTP', isLoading: false });
+        set({ error: result.error || 'Gagal mengirim OTP' });
         return result;
       }
 
-      set({ isLoading: false });
       return result;
     } catch (error: any) {
       const errorMessage = error.message || 'Terjadi kesalahan';
-      set({ error: errorMessage, isLoading: false });
+      set({ error: errorMessage });
       return { success: false, error: errorMessage };
     }
   },
@@ -52,9 +51,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   verifyOtp: async (phone: string, otp: string) => {
     try {
       set({ isLoading: true, error: null });
+      logger.info('[authStore] Calling verifyOtpService with phone:', phone);
       const result = await verifyOtpService(phone, otp);
 
+      logger.info('[authStore] verifyOtpService result:', JSON.stringify({
+        hasError: !!result.error,
+        hasSession: !!result.session,
+        isProfileComplete: result.isProfileComplete,
+      }));
+
       if (result.error || !result.session) {
+        logger.error('[authStore] Verification failed:', result.error);
         set({ error: result.error || 'Verifikasi gagal', isLoading: false });
         return { success: false, error: result.error };
       }
@@ -70,8 +77,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await saveUserData(user);
       }
 
-      // Check if profile is complete
-      const isProfileComplete = user?.isProfileComplete ?? false;
+      // Check if profile is complete - prioritize value from verify response over user object
+      const isProfileComplete = result.isProfileComplete ?? user?.isProfileComplete ?? false;
+
+      logger.info('[authStore] Setting state - isAuthenticated:', isProfileComplete, 'isProfileComplete:', isProfileComplete);
 
       // Update state - only set isAuthenticated to true if profile is complete
       set({
@@ -82,10 +91,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         error: null,
       });
 
-      logger.info('User authenticated successfully', { isProfileComplete });
+      logger.info('[authStore] User authenticated successfully', {
+        isProfileComplete,
+        userId: user?.id,
+        phone: user?.phone,
+      });
       return { success: true, isProfileComplete };
     } catch (error: any) {
       const errorMessage = error.message || 'Terjadi kesalahan';
+      logger.error('[authStore] verifyOtp error:', errorMessage);
       set({ error: errorMessage, isLoading: false });
       return { success: false, error: errorMessage };
     }
@@ -98,8 +112,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Sign out from Supabase
       await signOutService();
 
-      // Clear local storage
+      // Clear all session data from SecureStore
       await clearSession();
+
+      // Clear MMKV encrypted stores (if any sensitive data cached)
+      const { clearAllEncryptedData } = await import('@services/security/secureStorageService');
+      try {
+        await clearAllEncryptedData();
+      } catch (mmkvError) {
+        logger.warn('Failed to clear MMKV data during logout:', mmkvError);
+      }
+
+      // TODO: Unregister push notification tokens server-side
+      // This should be implemented when push notifications are configured
+
+      // Reset Supabase client state
+      const { supabase } = await import('@services/supabase/client');
+      await supabase.auth.signOut({ scope: 'local' });
 
       // Reset state
       set({
@@ -108,9 +137,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: false,
         isLoading: false,
         error: null,
+        biometricAvailable: false,
+        isBiometricEnabled: false,
       });
 
-      logger.info('User signed out successfully');
+      logger.info('User signed out successfully - all credentials cleared');
     } catch (error: any) {
       logger.error('Sign out error:', error);
       set({ isLoading: false, error: error.message });

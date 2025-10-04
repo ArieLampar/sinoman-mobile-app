@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+
 
 export const ProfileSkeleton: React.FC = () => {
   return (
-    <SkeletonPlaceholder borderRadius={8}>
+    <View>
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
@@ -38,7 +38,7 @@ export const ProfileSkeleton: React.FC = () => {
           <View style={styles.menuItem} />
         </View>
       </View>
-    </SkeletonPlaceholder>
+    </View>
   );
 };
 

@@ -1,65 +1,87 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import { View, StyleSheet, Animated, Easing } from 'react-native';
+import { useTheme } from 'react-native-paper';
 
 export const NotificationsSkeleton: React.FC = () => {
+  const theme = useTheme();
+  const shimmerAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 1500,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, [shimmerAnim]);
+
+  const opacity = shimmerAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0.3, 0.7, 0.3],
+  });
+
+  const skeletonStyle = {
+    backgroundColor: theme.colors.surfaceVariant,
+    opacity,
+  };
+
   return (
-    <SkeletonPlaceholder borderRadius={8}>
-      <View style={styles.container}>
+    <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.title} />
-          <View style={styles.markAllButton} />
+          <Animated.View style={[styles.title, skeletonStyle]} />
+          <Animated.View style={[styles.markAllButton, skeletonStyle]} />
         </View>
 
         {/* Filter Tabs */}
         <View style={styles.filters}>
-          <View style={styles.filterChip} />
-          <View style={styles.filterChip} />
-          <View style={styles.filterChip} />
+          <Animated.View style={[styles.filterChip, skeletonStyle]} />
+          <Animated.View style={[styles.filterChip, skeletonStyle]} />
+          <Animated.View style={[styles.filterChip, skeletonStyle]} />
         </View>
 
         {/* Notification List */}
         <View style={styles.notificationList}>
           {/* Notification Items */}
           <View style={styles.notificationItem}>
-            <View style={styles.notificationIcon} />
+            <Animated.View style={[styles.notificationIcon, skeletonStyle]} />
             <View style={styles.notificationContent}>
-              <View style={styles.notificationTitle} />
-              <View style={styles.notificationMessage} />
-              <View style={styles.notificationTime} />
+              <Animated.View style={[styles.notificationTitle, skeletonStyle]} />
+              <Animated.View style={[styles.notificationMessage, skeletonStyle]} />
+              <Animated.View style={[styles.notificationTime, skeletonStyle]} />
             </View>
           </View>
 
           <View style={styles.notificationItem}>
-            <View style={styles.notificationIcon} />
+            <Animated.View style={[styles.notificationIcon, skeletonStyle]} />
             <View style={styles.notificationContent}>
-              <View style={styles.notificationTitle} />
-              <View style={styles.notificationMessage} />
-              <View style={styles.notificationTime} />
+              <Animated.View style={[styles.notificationTitle, skeletonStyle]} />
+              <Animated.View style={[styles.notificationMessage, skeletonStyle]} />
+              <Animated.View style={[styles.notificationTime, skeletonStyle]} />
             </View>
           </View>
 
           <View style={styles.notificationItem}>
-            <View style={styles.notificationIcon} />
+            <Animated.View style={[styles.notificationIcon, skeletonStyle]} />
             <View style={styles.notificationContent}>
-              <View style={styles.notificationTitle} />
-              <View style={styles.notificationMessage} />
-              <View style={styles.notificationTime} />
+              <Animated.View style={[styles.notificationTitle, skeletonStyle]} />
+              <Animated.View style={[styles.notificationMessage, skeletonStyle]} />
+              <Animated.View style={[styles.notificationTime, skeletonStyle]} />
             </View>
           </View>
 
           <View style={styles.notificationItem}>
-            <View style={styles.notificationIcon} />
+            <Animated.View style={[styles.notificationIcon, skeletonStyle]} />
             <View style={styles.notificationContent}>
-              <View style={styles.notificationTitle} />
-              <View style={styles.notificationMessage} />
-              <View style={styles.notificationTime} />
+              <Animated.View style={[styles.notificationTitle, skeletonStyle]} />
+              <Animated.View style={[styles.notificationMessage, skeletonStyle]} />
+              <Animated.View style={[styles.notificationTime, skeletonStyle]} />
             </View>
           </View>
         </View>
       </View>
-    </SkeletonPlaceholder>
   );
 };
 

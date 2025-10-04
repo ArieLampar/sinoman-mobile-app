@@ -9,42 +9,71 @@ export async function completeRegistration(data: RegistrationRequest): Promise<R
   try {
     const { userId, name, email, address } = data;
 
-    // Update user metadata with profile information
-    const { data: updatedUser, error } = await supabase.auth.updateUser({
+    // Validate required fields
+    if (!name || name.trim() === '') {
+      return {
+        success: false,
+        error: 'Nama wajib diisi',
+      };
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return {
+        success: false,
+        error: 'Format email tidak valid',
+      };
+    }
+
+    // Update user_profiles table
+    const { data: profile, error: updateError } = await supabase
+      .from('user_profiles')
+      .update({
+        name: name.trim(),
+        email: email?.trim() || null,
+        address: address?.trim() || null,
+        is_profile_complete: true,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId)
+      .select()
+      .single();
+
+    if (updateError) {
+      logger.error('Profile update error:', updateError);
+      return {
+        success: false,
+        error: 'Gagal menyimpan profil',
+      };
+    }
+
+    // Update user_metadata in auth.users for consistency
+    const { error: metadataError } = await supabase.auth.updateUser({
       data: {
-        name,
-        email: email || undefined,
-        address: address || undefined,
+        name: name.trim(),
+        email: email?.trim(),
+        address: address?.trim(),
         is_profile_complete: true,
       },
     });
 
-    if (error) {
-      logger.error('Registration error:', error);
-      return {
-        success: false,
-        error: error.message,
-      };
+    if (metadataError) {
+      logger.error('Metadata update error:', metadataError);
+      // Continue anyway since main profile is saved
     }
 
-    if (!updatedUser.user) {
-      return {
-        success: false,
-        error: 'Failed to update user profile',
-      };
-    }
-
-    // Convert to our User type
+    // Construct updated user object
     const user: User = {
-      id: updatedUser.user.id,
-      phone: updatedUser.user.phone || '',
-      email: updatedUser.user.email,
-      name: updatedUser.user.user_metadata?.name,
-      address: updatedUser.user.user_metadata?.address,
+      id: profile.id,
+      phone: profile.phone,
+      email: profile.email,
+      name: profile.name,
+      address: profile.address,
       isProfileComplete: true,
-      createdAt: updatedUser.user.created_at,
-      updatedAt: updatedUser.user.updated_at,
+      createdAt: profile.created_at,
+      updatedAt: profile.updated_at,
     };
+
+    logger.info('Registration completed successfully for user:', userId);
 
     return {
       success: true,
@@ -54,7 +83,7 @@ export async function completeRegistration(data: RegistrationRequest): Promise<R
     logger.error('Registration exception:', error);
     return {
       success: false,
-      error: error.message || 'An unexpected error occurred',
+      error: error.message || 'Terjadi kesalahan saat menyimpan profil',
     };
   }
 }

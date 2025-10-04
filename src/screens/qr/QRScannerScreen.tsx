@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { Text, useTheme, Button, ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Camera, CameraType } from 'expo-camera';
@@ -18,6 +18,7 @@ export const QRScannerScreen: React.FC<MainTabScreenProps<'QRScanner'>> = ({ nav
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [flashEnabled, setFlashEnabled] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
   useEffect(() => {
     requestCameraPermission();
@@ -44,8 +45,14 @@ export const QRScannerScreen: React.FC<MainTabScreenProps<'QRScanner'>> = ({ nav
   }, [scanResult]);
 
   const requestCameraPermission = async () => {
-    const { status } = await Camera.requestCameraPermissionsAsync();
-    setHasPermission(status === 'granted');
+    try {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === 'granted');
+    } catch (error) {
+      console.error('Camera permission error:', error);
+      setCameraError('Kamera tidak tersedia. Pastikan Anda menjalankan di perangkat fisik atau emulator yang mendukung kamera.');
+      setHasPermission(false);
+    }
   };
 
   const handleBarCodeScanned = async ({ type, data }: BarCodeEvent) => {
@@ -73,40 +80,56 @@ export const QRScannerScreen: React.FC<MainTabScreenProps<'QRScanner'>> = ({ nav
     );
   }
 
-  if (hasPermission === false) {
+  if (hasPermission === false || cameraError) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>
         <View style={styles.centerContent}>
           <Icon name="camera-off" size={64} color={theme.colors.onSurfaceVariant} />
           <Text variant="headlineSmall" style={[styles.title, { color: theme.colors.onSurface }]}>
-            Izin Kamera Diperlukan
+            {cameraError ? 'Kamera Tidak Tersedia' : 'Izin Kamera Diperlukan'}
           </Text>
           <Text
             variant="bodyMedium"
             style={[styles.message, { color: theme.colors.onSurfaceVariant, textAlign: 'center' }]}
           >
-            Aplikasi memerlukan akses kamera untuk memindai QR code. Silakan aktifkan izin kamera di pengaturan
-            perangkat Anda.
+            {cameraError ||
+              'Aplikasi memerlukan akses kamera untuk memindai QR code. Silakan aktifkan izin kamera di pengaturan perangkat Anda.'}
           </Text>
-          <Button mode="contained" onPress={requestCameraPermission} style={styles.button}>
-            Minta Izin Kamera
+          {!cameraError && (
+            <Button mode="contained" onPress={requestCameraPermission} style={styles.button}>
+              Minta Izin Kamera
+            </Button>
+          )}
+          <Button
+            mode="outlined"
+            onPress={() => (navigation as any).navigate('Dashboard')}
+            style={styles.button}
+          >
+            Kembali ke Dashboard
           </Button>
         </View>
       </SafeAreaView>
     );
   }
 
-  return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#000000' }]} edges={['top']}>
-      <Camera
-        style={styles.camera}
-        type={CameraType.back}
-        enableTorch={flashEnabled}
-        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-        barCodeScannerSettings={{
-          barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
-        }}
-      >
+  // Fallback UI if Camera component fails to render
+  try {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: '#000000' }]} edges={['top']}>
+        <Camera
+          style={styles.camera}
+          type={CameraType.back}
+          enableTorch={flashEnabled}
+          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+          barCodeScannerSettings={{
+            barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
+          }}
+          onCameraReady={() => console.log('Camera ready')}
+          onMountError={(error) => {
+            console.error('Camera mount error:', error);
+            setCameraError('Gagal memuat kamera. Pastikan aplikasi berjalan di perangkat yang mendukung kamera.');
+          }}
+        >
         <View style={styles.overlay}>
           {/* Header */}
           <View style={styles.header}>
@@ -181,7 +204,33 @@ export const QRScannerScreen: React.FC<MainTabScreenProps<'QRScanner'>> = ({ nav
         </View>
       </Camera>
     </SafeAreaView>
-  );
+    );
+  } catch (error) {
+    console.error('Camera render error:', error);
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]} edges={['top']}>
+        <View style={styles.centerContent}>
+          <Icon name="camera-off" size={64} color={theme.colors.onSurfaceVariant} />
+          <Text variant="headlineSmall" style={[styles.title, { color: theme.colors.onSurface }]}>
+            Kamera Tidak Tersedia
+          </Text>
+          <Text
+            variant="bodyMedium"
+            style={[styles.message, { color: theme.colors.onSurfaceVariant, textAlign: 'center' }]}
+          >
+            Fitur kamera tidak tersedia dalam mode development. Gunakan production build untuk mengakses fitur QR Scanner.
+          </Text>
+          <Button
+            mode="contained"
+            onPress={() => (navigation as any).navigate('Dashboard')}
+            style={styles.button}
+          >
+            Kembali ke Dashboard
+          </Button>
+        </View>
+      </SafeAreaView>
+    );
+  }
 };
 
 const styles = StyleSheet.create({

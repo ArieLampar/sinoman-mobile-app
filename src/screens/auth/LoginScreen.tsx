@@ -31,10 +31,16 @@ export const LoginScreen: React.FC<AuthScreenProps<'Login'>> = ({ navigation }) 
     // Send OTP
     const result = await sendOtp(phone);
 
+    logger.info('[LoginScreen] sendOtp result:', JSON.stringify(result));
+    logger.info('[LoginScreen] result.success:', result.success);
+
     if (result.success) {
+      logger.info('[LoginScreen] Navigating to OTP screen with phone:', phone);
       // Navigate to OTP screen
       navigation.navigate('OTP', { phone });
+      logger.info('[LoginScreen] Navigation called');
     } else {
+      logger.error('[LoginScreen] OTP send failed:', result.error);
       setError(result.error || 'Gagal mengirim kode OTP');
     }
   };

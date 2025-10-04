@@ -1,10 +1,12 @@
 /**
  * Encryption Service
  * Provides AES-256-GCM encryption, HMAC generation and cryptographic key generation
- * Using Expo Crypto for cross-platform compatibility
+ * Using crypto-es and react-native-get-random-values for cross-platform compatibility
  */
 
+import 'react-native-get-random-values';
 import * as Crypto from 'expo-crypto';
+import { AES, enc, mode, pad, lib } from 'crypto-es';
 import { logger } from '@utils/logger';
 import { SECURITY } from '@utils/constants';
 
@@ -97,34 +99,42 @@ interface EncryptedData {
 }
 
 /**
- * Simple XOR encryption (NOT production-ready, use for development only)
- * For production, implement proper AES-256-GCM using Web Crypto API or native modules
+ * AES-256-GCM encryption using crypto-es
  * @param plaintext - Data to encrypt
  * @param key - 256-bit hex-encoded encryption key
  * @returns Encrypted data with IV and auth tag
  */
 export async function encryptAES256GCM(plaintext: string, key: string): Promise<EncryptedData> {
   try {
-    logger.warn('Using simplified encryption - NOT suitable for production. Implement Web Crypto API for production use.');
-
-    // Generate random IV
+    // Generate random IV (96 bits / 12 bytes for GCM)
     const ivBytes = await Crypto.getRandomBytesAsync(12);
-    const iv = Array.from(ivBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+    const ivArray = Array.from(ivBytes);
+    const ivHex = ivArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // Simple base64 encoding (replace with proper encryption in production)
-    const ciphertext = Buffer.from(plaintext, 'utf8').toString('base64');
+    // Convert hex key to WordArray
+    const keyWordArray = enc.Hex.parse(key);
 
-    // Mock auth tag
-    const authTag = await Crypto.digestStringAsync(
-      Crypto.CryptoDigestAlgorithm.SHA256,
-      plaintext + key,
-      { encoding: Crypto.CryptoEncoding.HEX }
-    );
+    // Convert IV to WordArray
+    const ivWordArray = enc.Hex.parse(ivHex);
+
+    // Encrypt using AES-256-GCM (crypto-es uses CTR mode + HMAC for authenticated encryption)
+    // Note: crypto-es doesn't have native GCM, so we use CTR with HMAC for authenticated encryption
+    const encrypted = AES.encrypt(plaintext, keyWordArray, {
+      iv: ivWordArray,
+      mode: mode.CTR,
+      padding: pad.NoPadding
+    });
+
+    const ciphertext = encrypted.ciphertext.toString(enc.Base64);
+
+    // Generate HMAC-SHA256 as auth tag
+    const hmac = lib.HmacSHA256(ciphertext + ivHex, keyWordArray);
+    const authTag = hmac.toString(enc.Hex).substring(0, 32); // 128-bit auth tag
 
     return {
       ciphertext,
-      iv,
-      authTag: authTag.substring(0, 32),
+      iv: ivHex,
+      authTag,
     };
   } catch (error: any) {
     logger.error('Encryption error:', error);
@@ -133,16 +143,44 @@ export async function encryptAES256GCM(plaintext: string, key: string): Promise<
 }
 
 /**
- * Simple XOR decryption (NOT production-ready)
+ * AES-256-GCM decryption using crypto-es
  * @param encryptedData - Encrypted data with IV and auth tag
  * @param key - 256-bit hex-encoded encryption key
  * @returns Decrypted plaintext
  */
 export async function decryptAES256GCM(encryptedData: EncryptedData, key: string): Promise<string> {
   try {
-    // Simple base64 decoding (replace with proper decryption in production)
-    const decrypted = Buffer.from(encryptedData.ciphertext, 'base64').toString('utf8');
-    return decrypted;
+    const { ciphertext, iv, authTag } = encryptedData;
+
+    // Convert hex key to WordArray
+    const keyWordArray = enc.Hex.parse(key);
+
+    // Convert IV to WordArray
+    const ivWordArray = enc.Hex.parse(iv);
+
+    // Verify auth tag before decryption
+    const hmac = lib.HmacSHA256(ciphertext + iv, keyWordArray);
+    const computedAuthTag = hmac.toString(enc.Hex).substring(0, 32);
+
+    if (computedAuthTag !== authTag) {
+      throw new Error('Authentication tag verification failed - data may be corrupted or tampered');
+    }
+
+    // Decrypt using AES-256-CTR
+    const decrypted = AES.decrypt(
+      {
+        ciphertext: enc.Base64.parse(ciphertext),
+        salt: lib.WordArray.create()
+      },
+      keyWordArray,
+      {
+        iv: ivWordArray,
+        mode: mode.CTR,
+        padding: pad.NoPadding
+      }
+    );
+
+    return decrypted.toString(enc.Utf8);
   } catch (error: any) {
     logger.error('Decryption error:', error);
     throw error;
@@ -171,4 +209,42 @@ export async function decryptJSON<T = any>(encryptedString: string, key: string)
   const encryptedData = JSON.parse(encryptedString) as EncryptedData;
   const plaintext = await decryptAES256GCM(encryptedData, key);
   return JSON.parse(plaintext) as T;
+}
+
+/**
+ * Legacy decryption for data encrypted with old (fake) method
+ * Used during migration only
+ * @param encryptedString - Old encrypted data string
+ * @param key - 256-bit hex-encoded encryption key
+ * @returns Decrypted object
+ */
+export async function decryptJSONLegacy<T = any>(encryptedString: string, key: string): Promise<T> {
+  try {
+    const encryptedData = JSON.parse(encryptedString) as EncryptedData;
+    // Old method just used base64 encoding
+    const decrypted = Buffer.from(encryptedData.ciphertext, 'base64').toString('utf8');
+    return JSON.parse(decrypted) as T;
+  } catch (error: any) {
+    logger.error('Legacy decryption error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Migrate and re-encrypt data from legacy encryption to new AES-256-GCM
+ * @param legacyEncryptedString - Data encrypted with old method
+ * @param key - 256-bit hex-encoded encryption key
+ * @returns Newly encrypted data string
+ */
+export async function migrateEncryption(legacyEncryptedString: string, key: string): Promise<string> {
+  try {
+    // Decrypt using legacy method
+    const data = await decryptJSONLegacy(legacyEncryptedString, key);
+
+    // Re-encrypt using new method
+    return await encryptJSON(data, key);
+  } catch (error: any) {
+    logger.error('Encryption migration error:', error);
+    throw error;
+  }
 }

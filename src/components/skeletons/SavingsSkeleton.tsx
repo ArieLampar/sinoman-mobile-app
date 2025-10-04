@@ -1,36 +1,58 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import { View, StyleSheet, Animated, Easing } from 'react-native';
+import { useTheme } from 'react-native-paper';
 
 export const SavingsSkeleton: React.FC = () => {
+  const theme = useTheme();
+  const shimmerAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 1500,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, [shimmerAnim]);
+
+  const opacity = shimmerAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0.3, 0.7, 0.3],
+  });
+
+  const skeletonStyle = {
+    backgroundColor: theme.colors.surfaceVariant,
+    opacity,
+  };
+
   return (
-    <SkeletonPlaceholder borderRadius={8}>
-      <View style={styles.container}>
-        {/* Balance Card */}
-        <View style={styles.balanceCard} />
+    <View style={styles.container}>
+      {/* Balance Card */}
+      <Animated.View style={[styles.balanceCard, skeletonStyle]} />
 
-        {/* Tabs */}
-        <View style={styles.tabs}>
-          <View style={styles.tab} />
-          <View style={styles.tab} />
-          <View style={styles.tab} />
-        </View>
-
-        {/* Chart */}
-        <View style={styles.chart} />
-
-        {/* Section Title */}
-        <View style={styles.sectionTitle} />
-
-        {/* Transaction List */}
-        <View style={styles.transactionList}>
-          <View style={styles.transactionItem} />
-          <View style={styles.transactionItem} />
-          <View style={styles.transactionItem} />
-          <View style={styles.transactionItem} />
-        </View>
+      {/* Tabs */}
+      <View style={styles.tabs}>
+        <Animated.View style={[styles.tab, skeletonStyle]} />
+        <Animated.View style={[styles.tab, skeletonStyle]} />
+        <Animated.View style={[styles.tab, skeletonStyle]} />
       </View>
-    </SkeletonPlaceholder>
+
+      {/* Chart */}
+      <Animated.View style={[styles.chart, skeletonStyle]} />
+
+      {/* Section Title */}
+      <Animated.View style={[styles.sectionTitle, skeletonStyle]} />
+
+      {/* Transaction List */}
+      <View style={styles.transactionList}>
+        <Animated.View style={[styles.transactionItem, skeletonStyle]} />
+        <Animated.View style={[styles.transactionItem, skeletonStyle]} />
+        <Animated.View style={[styles.transactionItem, skeletonStyle]} />
+        <Animated.View style={[styles.transactionItem, skeletonStyle]} />
+      </View>
+    </View>
   );
 };
 

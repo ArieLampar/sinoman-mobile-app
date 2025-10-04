@@ -76,7 +76,7 @@ export interface SessionData {
 export function toUser(supabaseUser: SupabaseUser): User {
   return {
     id: supabaseUser.id,
-    phone: supabaseUser.phone || '',
+    phone: supabaseUser.phone || supabaseUser.user_metadata?.phone || '',
     email: supabaseUser.email,
     name: supabaseUser.user_metadata?.name,
     address: supabaseUser.user_metadata?.address,

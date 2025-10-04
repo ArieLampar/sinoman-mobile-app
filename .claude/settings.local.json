@@ -23,7 +23,13 @@
       "Bash(if exist NUL del NUL)",
       "Bash(npx react-native:*)",
       "Bash(npx expo start:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(supabase login:*)",
+      "Bash(supabase db:*)",
+      "Bash(supabase secrets:*)",
+      "Bash(supabase functions:*)",
+      "Bash(supabase migration:*)",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []

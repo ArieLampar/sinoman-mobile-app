@@ -1,35 +1,30 @@
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@services/supabase';
-import { formatPhoneForSupabase } from '@utils/formatters';
 import { logger } from '@utils/logger';
 import { OtpResponse } from '@types';
+import { sendOtpViaFontte, verifyOtpViaFontte } from './fonteOtpService';
 
 /**
- * Send OTP to phone number
+ * Send OTP to phone number via FONTTE WhatsApp API
+ * Uses custom OTP flow with Supabase Edge Functions instead of Supabase built-in SMS OTP
  * @param phone - Phone number (without +62 prefix)
  * @returns Response with success status and optional error
  */
 export async function sendOtp(phone: string): Promise<OtpResponse> {
   try {
-    const formattedPhone = formatPhoneForSupabase(phone);
-    logger.info('Sending OTP to:', formattedPhone);
+    logger.info('Sending OTP via FONTTE WhatsApp');
 
-    const { error } = await supabase.auth.signInWithOtp({
-      phone: formattedPhone,
-      options: {
-        channel: 'sms',
-      },
-    });
+    const result = await sendOtpViaFontte(phone);
 
-    if (error) {
-      logger.error('Send OTP error:', error.message);
+    if (!result.success) {
+      logger.error('Send OTP error:', result.error);
       return {
         success: false,
-        error: error.message || 'Gagal mengirim kode OTP',
+        error: result.error || 'Gagal mengirim kode OTP',
       };
     }
 
-    logger.info('OTP sent successfully');
+    logger.info('OTP sent successfully via FONTTE');
     return { success: true };
   } catch (error: any) {
     logger.error('Send OTP exception:', error);
@@ -41,43 +36,34 @@ export async function sendOtp(phone: string): Promise<OtpResponse> {
 }
 
 /**
- * Verify OTP code
+ * Verify OTP code via FONTTE custom flow
+ * Uses custom OTP verification with Supabase Edge Functions instead of Supabase built-in SMS OTP
  * @param phone - Phone number (without +62 prefix)
  * @param token - 6-digit OTP code
- * @returns Response with session data or error
+ * @returns Response with session data, isProfileComplete flag, or error
  */
 export async function verifyOtp(
   phone: string,
   token: string
-): Promise<{ session: Session | null; error?: string }> {
+): Promise<{ session: Session | null; error?: string; isProfileComplete?: boolean }> {
   try {
-    const formattedPhone = formatPhoneForSupabase(phone);
-    logger.info('Verifying OTP for:', formattedPhone);
+    logger.info('Verifying OTP via FONTTE');
 
-    const { data, error } = await supabase.auth.verifyOtp({
-      phone: formattedPhone,
-      token,
-      type: 'sms',
-    });
+    const result = await verifyOtpViaFontte(phone, token);
 
-    if (error) {
-      logger.error('Verify OTP error:', error.message);
+    if (result.error || !result.session) {
+      logger.error('Verify OTP error:', result.error);
       return {
         session: null,
-        error: error.message || 'Kode OTP tidak valid',
+        error: result.error || 'Kode OTP tidak valid',
       };
     }
 
-    if (!data.session) {
-      logger.error('Verify OTP: No session returned');
-      return {
-        session: null,
-        error: 'Gagal membuat sesi',
-      };
-    }
-
-    logger.info('OTP verified successfully');
-    return { session: data.session };
+    logger.info('OTP verified successfully via FONTTE');
+    return {
+      session: result.session,
+      isProfileComplete: result.isProfileComplete,
+    };
   } catch (error: any) {
     logger.error('Verify OTP exception:', error);
     return {

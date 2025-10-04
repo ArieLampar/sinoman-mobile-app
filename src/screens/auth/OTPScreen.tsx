@@ -52,20 +52,28 @@ export const OTPScreen: React.FC<AuthScreenProps<'OTP'>> = ({ navigation, route 
 
     setError(null);
 
-    logger.info('Verifying OTP for:', phone);
+    logger.info('[OTPScreen] Verifying OTP for:', phone);
 
     // Verify OTP
     const result = await verifyOtp(phone, otp);
 
+    logger.info('[OTPScreen] verifyOtp result:', JSON.stringify(result));
+
     if (!result.success) {
+      logger.error('[OTPScreen] OTP verification failed:', result.error);
       setError(result.error || 'Kode OTP tidak valid');
       return;
     }
 
+    logger.info('[OTPScreen] OTP verification successful, isProfileComplete:', result.isProfileComplete);
+
     // Check if profile is complete
     if (result.isProfileComplete === false) {
+      logger.info('[OTPScreen] Profile incomplete, navigating to Register');
       // Navigate to registration screen to complete profile
       navigation.navigate('Register');
+    } else {
+      logger.info('[OTPScreen] Profile complete, RootNavigator should switch to Main');
     }
     // If profile is complete, auth store will handle navigation via RootNavigator
   };

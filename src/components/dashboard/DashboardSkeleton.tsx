@@ -1,54 +1,69 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import { View, StyleSheet, Animated, Easing } from 'react-native';
 import { useTheme } from 'react-native-paper';
 
 export const DashboardSkeleton: React.FC = () => {
   const theme = useTheme();
+  const shimmerAnim = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.timing(shimmerAnim, {
+        toValue: 1,
+        duration: 1500,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      })
+    ).start();
+  }, [shimmerAnim]);
+
+  const opacity = shimmerAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [0.3, 0.7, 0.3],
+  });
+
+  const skeletonStyle = {
+    backgroundColor: theme.colors.surfaceVariant,
+    opacity,
+  };
 
   return (
-    <SkeletonPlaceholder
-      backgroundColor={theme.colors.surfaceVariant}
-      highlightColor={theme.colors.surface}
-      speed={1200}
-    >
-      <View style={styles.container}>
-        {/* Header Skeleton */}
-        <View style={styles.header}>
-          <View>
-            <View style={styles.greetingText} />
-            <View style={styles.nameText} />
-          </View>
-        </View>
-
-        {/* Balance Card Skeleton */}
-        <View style={styles.balanceCard} />
-
-        {/* Quick Actions Skeleton */}
-        <View style={styles.section}>
-          <View style={styles.sectionTitle} />
-          <View style={styles.quickActions}>
-            <View style={styles.quickAction} />
-            <View style={styles.quickAction} />
-            <View style={styles.quickAction} />
-            <View style={styles.quickAction} />
-          </View>
-        </View>
-
-        {/* Banner Skeleton */}
-        <View style={styles.banner} />
-
-        {/* Transactions Skeleton */}
-        <View style={styles.section}>
-          <View style={styles.sectionTitle} />
-          <View style={styles.transactionList}>
-            <View style={styles.transactionItem} />
-            <View style={styles.transactionItem} />
-            <View style={styles.transactionItem} />
-          </View>
+    <View style={styles.container}>
+      {/* Header Skeleton */}
+      <View style={styles.header}>
+        <View>
+          <Animated.View style={[styles.greetingText, skeletonStyle]} />
+          <Animated.View style={[styles.nameText, skeletonStyle]} />
         </View>
       </View>
-    </SkeletonPlaceholder>
+
+      {/* Balance Card Skeleton */}
+      <Animated.View style={[styles.balanceCard, skeletonStyle]} />
+
+      {/* Quick Actions Skeleton */}
+      <View style={styles.section}>
+        <Animated.View style={[styles.sectionTitle, skeletonStyle]} />
+        <View style={styles.quickActions}>
+          <Animated.View style={[styles.quickAction, skeletonStyle]} />
+          <Animated.View style={[styles.quickAction, skeletonStyle]} />
+          <Animated.View style={[styles.quickAction, skeletonStyle]} />
+          <Animated.View style={[styles.quickAction, skeletonStyle]} />
+        </View>
+      </View>
+
+      {/* Banner Skeleton */}
+      <Animated.View style={[styles.banner, skeletonStyle]} />
+
+      {/* Transactions Skeleton */}
+      <View style={styles.section}>
+        <Animated.View style={[styles.sectionTitle, skeletonStyle]} />
+        <View style={styles.transactionList}>
+          <Animated.View style={[styles.transactionItem, skeletonStyle]} />
+          <Animated.View style={[styles.transactionItem, skeletonStyle]} />
+          <Animated.View style={[styles.transactionItem, skeletonStyle]} />
+        </View>
+      </View>
+    </View>
   );
 };
 

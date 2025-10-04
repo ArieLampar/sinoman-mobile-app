@@ -81,3 +81,10 @@ assets/android/
 !assets/splash-source.png
 !assets/adaptive-icon-monochrome.png
 !assets/notification-icon.png
+
+# Supabase
+.branches
+.temp
+supabase/.env
+supabase/.branches
+supabase/.temp

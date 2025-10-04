@@ -24,7 +24,15 @@
     "generate-icons": "node scripts/create-placeholder-icons.js",
     "generate-production-assets": "node scripts/generate-production-assets.js",
     "verify-assets": "node scripts/verify-assets.js",
-    "validate-eas": "node scripts/validate-eas-config.js"
+    "validate-eas": "node scripts/validate-eas-config.js",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status",
+    "supabase:db:reset": "supabase db reset",
+    "supabase:db:push": "supabase db push",
+    "supabase:functions:deploy": "supabase functions deploy",
+    "supabase:functions:serve": "supabase functions serve",
+    "supabase:logs": "supabase functions logs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "1.23.1",
@@ -38,6 +46,8 @@
     "@react-navigation/native-stack": "^6.9.0",
     "@sentry/react-native": "~5.24.3",
     "@supabase/supabase-js": "^2.38.0",
+    "crypto-es": "^3.1.2",
+    "decimal.js": "^10.6.0",
     "dotenv": "^17.2.3",
     "expo": "~51.0.0",
     "expo-barcode-scanner": "~13.0.1",
@@ -62,6 +72,7 @@
     "react-native": "0.74.5",
     "react-native-chart-kit": "^6.12.0",
     "react-native-gesture-handler": "~2.16.1",
+    "react-native-get-random-values": "^1.11.0",
     "react-native-mmkv": "^2.11.0",
     "react-native-paper": "^5.0.0",
     "react-native-qrcode-svg": "^6.2.0",
@@ -69,12 +80,12 @@
     "react-native-reanimated-carousel": "^3.5.1",
     "react-native-safe-area-context": "4.10.5",
     "react-native-screens": "3.31.1",
-    "react-native-skeleton-placeholder": "^5.2.4",
     "react-native-ssl-pinning": "^1.6.0",
     "react-native-svg": "15.2.0",
     "react-native-toast-message": "^2.3.3",
     "react-native-url-polyfill": "^2.0.0",
     "react-native-vector-icons": "^10.0.0",
+    "zod": "^4.1.11",
     "zustand": "^4.4.0"
   },
   "devDependencies": {

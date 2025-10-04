@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+
 
 export const TransactionHistorySkeleton: React.FC = () => {
   return (
-    <SkeletonPlaceholder borderRadius={8}>
+    <View>
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
@@ -74,7 +74,7 @@ export const TransactionHistorySkeleton: React.FC = () => {
           </View>
         </View>
       </View>
-    </SkeletonPlaceholder>
+    </View>
   );
 };
 

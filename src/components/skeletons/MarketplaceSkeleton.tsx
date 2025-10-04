@@ -1,13 +1,13 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
-import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - 48) / 2; // Account for padding and gap
 
 export const MarketplaceSkeleton: React.FC = () => {
   return (
-    <SkeletonPlaceholder borderRadius={8}>
+    <View>
       <View style={styles.container}>
         {/* Search Bar */}
         <View style={styles.searchBar} />
@@ -40,7 +40,7 @@ export const MarketplaceSkeleton: React.FC = () => {
           </View>
         </View>
       </View>
-    </SkeletonPlaceholder>
+    </View>
   );
 };
 

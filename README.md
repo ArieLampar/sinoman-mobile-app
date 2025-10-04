@@ -266,7 +266,55 @@ EXPO_PUBLIC_ENV=development
 
 # Expo EAS Configuration (for push notifications)
 EAS_PROJECT_ID=your-expo-project-id-here
+
+# FONTTE WhatsApp OTP (optional, for custom OTP flow)
+EXPO_PUBLIC_FONTTE_ENABLED=true
+EXPO_PUBLIC_OTP_EXPIRY_SECONDS=300
+EXPO_PUBLIC_OTP_RESEND_COOLDOWN=60
 ```
+
+## Supabase Setup
+
+### 1. Install Supabase CLI
+
+```bash
+npm install -g supabase
+```
+
+### 2. Login to Supabase
+
+```bash
+supabase login
+```
+
+### 3. Link Project
+
+```bash
+supabase link --project-ref your-project-ref
+```
+
+### 4. Run Migrations
+
+```bash
+supabase db push
+```
+
+### 5. Deploy Edge Functions
+
+```bash
+supabase functions deploy send-otp
+supabase functions deploy verify-otp
+```
+
+### 6. Set Secrets
+
+```bash
+supabase secrets set FONTTE_API_TOKEN=your-fontte-token
+supabase secrets set OTP_EXPIRY_MINUTES=5
+supabase secrets set MAX_OTP_ATTEMPTS=3
+```
+
+Get your FONTTE token from: https://fontte.com/dashboard
 
 ## Testing
 
@@ -755,6 +803,7 @@ Proprietary - Koperasi Sinoman Ponorogo
 ✅ **QR Enhancement**: Flash Toggle, MyQRCode Screen, Offline Support
 ✅ **Phase 5**: Marketplace Module (Product Browsing, Cart, Checkout)
 ✅ **Phase 6**: Profile & Settings Complete (Edit Profile, Fit Challenge)
+✅ **FONTTE Integration**: WhatsApp OTP via Custom Edge Functions
 
 **Current Status**: All Core Features - 100% Complete 🎉
 
@@ -771,9 +820,19 @@ The authentication system includes:
 
 ### Phone + OTP Authentication
 - Indonesian phone number validation (08XXXXXXXXX)
-- 6-digit OTP verification via Supabase Auth
-- OTP expiry countdown (180 seconds)
-- Resend OTP functionality
+- 6-digit OTP verification via FONTTE WhatsApp API (custom implementation)
+- OTP expiry countdown (300 seconds / 5 minutes)
+- Resend OTP functionality with cooldown (60 seconds)
+- Rate limiting: max 5 requests per hour per phone number
+
+### FONTTE WhatsApp OTP Integration
+- Custom OTP flow menggunakan Supabase Edge Functions
+- OTP dikirim via WhatsApp menggunakan FONTTE API
+- OTP berlaku selama 5 menit
+- Rate limiting: max 5 requests per jam per nomor
+- Resend cooldown: 60 detik
+- Max verification attempts: 3 kali per OTP
+- Automatic cleanup untuk OTP yang expired
 
 ### Android OTP Auto-Read
 - Automatic SMS detection using SMS Retriever API

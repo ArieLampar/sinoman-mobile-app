@@ -7,6 +7,7 @@ import { AuthNavigator } from './AuthNavigator';
 import { MainNavigator } from './MainNavigator';
 import { useAuthStore } from '@store/authStore';
 import { ErrorBoundary } from '@components/common';
+import { logger } from '@utils/logger';
 
 // Lazy load non-critical screens for better performance
 const TopUpScreen = lazy(() => import('@screens/savings/TopUpScreen').then(m => ({ default: m.TopUpScreen })));
@@ -25,9 +26,27 @@ const OrderConfirmationScreen = lazy(() => import('@screens/marketplace/OrderCon
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+// Wrapper components for ErrorBoundary - defined outside to avoid inline function warnings
+const AuthNavigatorWrapper: React.FC = () => (
+  <ErrorBoundary context="Auth">
+    <AuthNavigator />
+  </ErrorBoundary>
+);
+
+const MainNavigatorWrapper: React.FC = () => (
+  <ErrorBoundary context="Main">
+    <MainNavigator />
+  </ErrorBoundary>
+);
+
 export const RootNavigator: React.FC = () => {
   const theme = useTheme();
   const { isAuthenticated, isLoading, checkSession } = useAuthStore();
+
+  // Debug logging
+  useEffect(() => {
+    logger.info('[RootNavigator] isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
+  }, [isAuthenticated, isLoading]);
 
   useEffect(() => {
     // Check for existing session on app start
@@ -50,11 +69,7 @@ export const RootNavigator: React.FC = () => {
           <>
             <Stack.Screen
               name="Main"
-              component={() => (
-                <ErrorBoundary context="Main">
-                  <MainNavigator />
-                </ErrorBoundary>
-              )}
+              component={MainNavigatorWrapper}
             />
             <Stack.Screen
               name="TopUp"
@@ -172,11 +187,7 @@ export const RootNavigator: React.FC = () => {
         ) : (
           <Stack.Screen
             name="Auth"
-            component={() => (
-              <ErrorBoundary context="Auth">
-                <AuthNavigator />
-              </ErrorBoundary>
-            )}
+            component={AuthNavigatorWrapper}
           />
         )}
       </Stack.Navigator>
