@@ -2,8 +2,6 @@ import 'dotenv/config';
 import { ExpoConfig } from '@expo/config-types';
 
 export default (): ExpoConfig => {
-  const config = require('./app.json').expo;
-
   // Load environment variables with fallbacks for EAS Build
   const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://fjequffxcontjvupgedh.supabase.co';
   const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqZXF1ZmZ4Y29udGp2dXBnZWRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwNjU1MjAsImV4cCI6MjA3NDY0MTUyMH0.RWDxO6Q5_o5lxaj83hi3OOBYbnI5vKSTEIQMb22fgaU';
@@ -24,21 +22,71 @@ export default (): ExpoConfig => {
   }
 
   return {
-    ...config,
+    name: 'Sinoman Mobile App',
+    slug: 'sinoman-mobile-app',
+    version: '1.0.0',
+    orientation: 'portrait',
+    icon: './assets/icon.png',
+    userInterfaceStyle: 'automatic',
+    description: 'Aplikasi resmi Koperasi Sinoman Ponorogo untuk kelola simpanan, belanja, dan program kesehatan.',
+    primaryColor: '#059669',
+    scheme: 'sinoman',
+    splash: {
+      image: './assets/splash.png',
+      resizeMode: 'contain',
+      backgroundColor: '#059669',
+    },
+    notification: {
+      icon: './assets/notification-icon.png',
+      color: '#059669',
+    },
+    assetBundlePatterns: ['**/*'],
     plugins: [
       'expo-font',
       'expo-secure-store',
-      ...(config.plugins || []),
     ],
     android: {
-      ...config.android,
+      package: 'id.sinomanapp.mobile',
+      versionCode: 6,
+      allowBackup: false,
+      adaptiveIcon: {
+        foregroundImage: './assets/adaptive-icon.png',
+        backgroundColor: '#059669',
+        monochromeImage: './assets/adaptive-icon-monochrome.png',
+      },
+      permissions: [
+        'CAMERA',
+        'USE_FINGERPRINT',
+        'USE_BIOMETRIC',
+        'RECEIVE_BOOT_COMPLETED',
+        'POST_NOTIFICATIONS',
+        'VIBRATE',
+        'ACCESS_NETWORK_STATE',
+        'INTERNET',
+      ],
+      blockedPermissions: ['ACCESS_FINE_LOCATION'],
     },
     ios: {
-      ...config.ios,
+      bundleIdentifier: 'id.sinomanapp.mobile',
+      buildNumber: '1.0.0',
+      jsEngine: 'hermes',
+      supportsTablet: true,
+      userInterfaceStyle: 'automatic',
       infoPlist: {
-        ...config.ios?.infoPlist,
+        NSCameraUsageDescription: 'Aplikasi memerlukan akses kamera untuk scan QR code pembayaran',
+        NSFaceIDUsageDescription: 'Aplikasi menggunakan Face ID untuk login yang aman dan cepat',
+        NSPhotoLibraryUsageDescription: 'Aplikasi memerlukan akses galeri untuk memilih foto profil',
+        NSLocationWhenInUseUsageDescription: 'Temukan merchant terdekat (opsional)',
+        UIBackgroundModes: ['remote-notification'],
         ITSAppUsesNonExemptEncryption: false,
       },
+    },
+    updates: {
+      fallbackToCacheTimeout: 0,
+      url: 'https://u.expo.dev/06863a61-aa5a-4f34-b0e8-7be02c7514eb',
+    },
+    runtimeVersion: {
+      policy: 'appVersion',
     },
     extra: {
       supabaseUrl,

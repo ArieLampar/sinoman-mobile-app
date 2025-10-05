@@ -6,8 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "entryPoint": "./index.js",
-    "main": "index.js",
     "description": "Aplikasi resmi Koperasi Sinoman Ponorogo untuk kelola simpanan, belanja, dan program kesehatan.",
     "primaryColor": "#059669",
     "scheme": "sinoman",
